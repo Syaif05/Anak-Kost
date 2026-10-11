@@ -270,4 +270,97 @@ class DocumentsRepository {
       ),
     );
   }
+
+  /// 5. Menautkan Foto Bukti Struk Terenkripsi ke Transaksi Keuangan (PRD 3.6.2, 3.6.4, 6.5)
+  Future<String> attachEvidenceToTransaction({
+    required String transactionId,
+    required Uint8List fileBytes,
+    required Uint8List masterKey,
+    String mimeType = 'image/jpeg',
+  }) async {
+    final userId = await _getUserId();
+    final deviceId = await _getDeviceId();
+    final cryptoContextId = await _getCryptoContextId();
+    final attachmentId = _uuid.v4();
+    final opId = _uuid.v4();
+    final now = DateTime.now().millisecondsSinceEpoch;
+
+    final fileKey = _encryptionService.generateRandomBytes(32);
+
+    final encryptedFile = await _encryptionService.encrypt(
+      plaintext: fileBytes,
+      key: fileKey,
+      aad: attachmentId.codeUnits,
+    );
+
+    final wrappedKeyPayload = await _encryptionService.encrypt(
+      plaintext: fileKey,
+      key: masterKey,
+      aad: cryptoContextId.codeUnits,
+    );
+
+    final ciphertextHash = await _encryptionService.sha256Hex(encryptedFile.combinedWithTag);
+    final savedPath = await _fileStorage.saveCiphertext(
+      fileId: attachmentId,
+      ciphertextBytes: encryptedFile.combinedWithTag,
+    );
+
+    await _db.transaction(() async {
+      await _db.into(_db.attachments).insert(
+            AttachmentsCompanion.insert(
+              id: attachmentId,
+              userId: userId,
+              mediaKind: 'photo',
+              mimeType: mimeType,
+              storagePath: savedPath,
+              ciphertextSha256: ciphertextHash,
+              byteSize: encryptedFile.combinedWithTag.length,
+              cryptoContextId: cryptoContextId,
+              wrappedFileKey: wrappedKeyPayload.combinedWithTag,
+              wrapNonce: wrappedKeyPayload.nonce,
+              fileNonce: encryptedFile.nonce,
+              createdAt: now,
+              updatedAt: now,
+              lastOperationId: opId,
+              originDeviceId: deviceId,
+            ),
+          );
+
+      await _db.into(_db.attachmentLinks).insert(
+            AttachmentLinksCompanion.insert(
+              id: _uuid.v4(),
+              userId: userId,
+              attachmentId: attachmentId,
+              transactionId: Value(transactionId),
+              linkRole: const Value('evidence'),
+              createdAt: now,
+              updatedAt: now,
+              lastOperationId: opId,
+              originDeviceId: deviceId,
+            ),
+          );
+
+      await _db.into(_db.syncOutbox).insert(
+            SyncOutboxCompanion.insert(
+              operationId: opId,
+              aggregateType: 'attachment',
+              aggregateId: attachmentId,
+              baseVersion: 0,
+              payloadJson: jsonEncode({
+                'attachment_id': attachmentId,
+                'media_kind': 'photo',
+                'mime_type': mimeType,
+                'link_role': 'evidence',
+                'transaction_id': transactionId,
+                'ciphertext_sha256': ciphertextHash,
+                'byte_size': encryptedFile.combinedWithTag.length,
+              }),
+              localRevision: 1,
+              createdAt: now,
+            ),
+          );
+    });
+
+    return attachmentId;
+  }
 }

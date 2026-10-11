@@ -227,10 +227,10 @@
    - Opsi pencocokan item struk ke inventaris barang (opsional, jika disetujui pengguna).
 
 #### Gate / Definition of Done Fase 5:
-- [ ] Test Case **T11** lolos: Parser mampu memisahkan total dari subtotal, tunai, dan kembalian pada struk uji.
-- [ ] OCR berjalan lancar dalam mode pesawat (offline) menggunakan model Latin bundled.
-- [ ] Alur konfirmasi draf struk berhasil menghasilkan transaksi keuangan dan mutasi stok (jika dipilih) secara akurat.
-- [ ] Foto struk asli tersimpan terenkripsi sebagai lampiran transaksi (`attachment`).
+- [x] Test Case **T11** lolos: Parser mampu memisahkan total dari subtotal, tunai, dan kembalian pada struk uji.
+- [x] OCR berjalan lancar dalam mode pesawat (offline) menggunakan model Latin bundled.
+- [x] Alur konfirmasi draf struk berhasil menghasilkan transaksi keuangan dan mutasi stok (jika dipilih) secara akurat.
+- [x] Foto struk asli tersimpan terenkripsi sebagai lampiran transaksi (`attachment`).
 
 ---
 

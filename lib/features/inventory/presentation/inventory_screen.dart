@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../documents/presentation/providers/documents_providers.dart';
 import '../../documents/presentation/widgets/add_document_dialog.dart';
 import '../../documents/presentation/widgets/vault_view.dart';
+import '../../ocr/presentation/widgets/receipt_scanner_sheet.dart';
 import '../domain/models/inventory_models.dart';
 import 'providers/inventory_providers.dart';
 import 'widgets/add_inventory_item_sheet.dart';
@@ -96,6 +97,13 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
           'Kebutuhan, Stok & Brankas',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.document_scanner_outlined),
+            tooltip: 'Pindai Struk Belanja (OCR)',
+            onPressed: () => ReceiptScannerSheet.show(context),
+          ),
+        ],
         bottom: TabBar(
           controller: _tabController,
           tabs: const [

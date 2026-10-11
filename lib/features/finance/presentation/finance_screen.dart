@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../ocr/presentation/widgets/receipt_scanner_sheet.dart';
 import 'providers/finance_providers.dart';
 import 'widgets/balance_card.dart';
 import 'widgets/budget_card_widget.dart';
@@ -35,6 +36,11 @@ class _FinanceScreenState extends ConsumerState<FinanceScreen> {
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.document_scanner_outlined),
+            tooltip: 'Pindai Struk Belanja (OCR)',
+            onPressed: () => ReceiptScannerSheet.show(context),
+          ),
           IconButton(
             icon: const Icon(Icons.savings_outlined),
             tooltip: 'Target Tabungan',
