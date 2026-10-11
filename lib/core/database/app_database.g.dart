@@ -33277,6 +33277,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $UserKeyEnvelopesTable userKeyEnvelopes = $UserKeyEnvelopesTable(
     this,
   );
+  late final FinanceDao financeDao = FinanceDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();

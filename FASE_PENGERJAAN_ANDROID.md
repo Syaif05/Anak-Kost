@@ -132,10 +132,10 @@
    - Setiap mutasi transaksi/budget otomatis menghasilkan entri di `sync_outbox` dalam transaksi DB yang sama.
 
 #### Gate / Definition of Done Fase 2:
-- [ ] Test Case **T01** lolos: Transfer bank Rp1.000.000 ke e-wallet Rp200.000 dengan biaya transfer Rp2.500 menghasilkan saldo bank Rp797.500 dan e-wallet Rp200.000. Laporan hanya mencatat pengeluaran Rp2.500.
-- [ ] Test Case **T02** lolos: Edit dan void transaksi memutasi ledger dan sisa budget secara atomik tanpa inkonsistensi.
-- [ ] Saldo dompet dan sisa budget terhitung otomatis secara akurat tanpa floating point rounding error.
-- [ ] UI Android berfungsi offline penuh dan data tersimpan persisten setelah app di-kill.
+- [x] Test Case **T01** lolos: Transfer bank Rp1.000.000 ke e-wallet Rp200.000 dengan biaya transfer Rp2.500 menghasilkan saldo bank Rp797.500 dan e-wallet Rp200.000. Laporan hanya mencatat pengeluaran Rp2.500.
+- [x] Test Case **T02** lolos: Edit dan void transaksi memutasi ledger dan sisa budget secara atomik tanpa inkonsistensi.
+- [x] Saldo dompet dan sisa budget terhitung otomatis secara akurat tanpa floating point rounding error.
+- [x] UI Android berfungsi offline penuh dan data tersimpan persisten setelah app di-kill.
 
 ---
 

@@ -8,7 +8,10 @@ import '../core/security/app_lock_service.dart';
 import '../features/auth/presentation/lock_screen.dart';
 import '../features/auth/presentation/setup_pin_screen.dart';
 import '../features/dashboard/presentation/dashboard_screen.dart';
+import '../features/finance/presentation/add_transaction_screen.dart';
 import '../features/finance/presentation/finance_screen.dart';
+import '../features/finance/presentation/saving_goals_screen.dart';
+import '../features/finance/presentation/transfer_screen.dart';
 import '../features/inventory/presentation/inventory_screen.dart';
 import '../features/agenda/presentation/agenda_screen.dart';
 import '../features/bills/presentation/bills_screen.dart';
@@ -71,6 +74,26 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/finance',
                 builder: (context, state) => const FinanceScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'add',
+                    parentNavigatorKey: _rootNavigatorKey,
+                    builder: (context, state) {
+                      final kind = state.uri.queryParameters['kind'] ?? 'expense';
+                      return AddTransactionScreen(initialKind: kind);
+                    },
+                  ),
+                  GoRoute(
+                    path: 'transfer',
+                    parentNavigatorKey: _rootNavigatorKey,
+                    builder: (context, state) => const TransferScreen(),
+                  ),
+                  GoRoute(
+                    path: 'savings',
+                    parentNavigatorKey: _rootNavigatorKey,
+                    builder: (context, state) => const SavingGoalsScreen(),
+                  ),
+                ],
               ),
             ],
           ),
