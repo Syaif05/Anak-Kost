@@ -196,10 +196,10 @@
    - Secure PDF & Image Viewer: dekripsi berkas di memori privat (menggunakan `pdfrx` / memory image), pembersihan cache memori saat aplikasi keluar dari foreground.
 
 #### Gate / Definition of Done Fase 4:
-- [ ] Test Case **T04** lolos: Checkout belanja 2 barang mencatat pengeluaran dompet, menambah stok, menyimpan histori harga, dan mencatat outbox secara atomik.
-- [ ] Pencegahan stok negatif bekerja: pemakaian melebihi stok yang ada diblokir dan meminta koreksi.
-- [ ] Test Case **T13** & **T14** lolos: File dokumen dan metadata tersimpan dalam bentuk ciphertext; dekripsi gagal jika kunci salah; data tidak bocor ke log atau storage publik.
-- [ ] Viewer dokumen aman: keluar aplikasi segera mengunci brankas dan membersihkan memori preview.
+- [x] Test Case **T04** lolos: Checkout belanja 2 barang mencatat pengeluaran dompet, menambah stok, menyimpan histori harga, dan mencatat outbox secara atomik.
+- [x] Pencegahan stok negatif bekerja: pemakaian melebihi stok yang ada diblokir dan meminta koreksi.
+- [x] Test Case **T13** & **T14** lolos: File dokumen dan metadata tersimpan dalam bentuk ciphertext; dekripsi gagal jika kunci salah; data tidak bocor ke log atau storage publik.
+- [x] Viewer dokumen aman: keluar aplikasi segera mengunci brankas dan membersihkan memori preview.
 
 ---
 

@@ -131,4 +131,10 @@ class EncryptionService {
     final bytes = await derived.extractBytes();
     return Uint8List.fromList(bytes);
   }
+
+  /// Menghitung SHA-256 hash dalam format string hex
+  Future<String> sha256Hex(List<int> bytes) async {
+    final hash = await _sha256.hash(bytes);
+    return hash.bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
+  }
 }

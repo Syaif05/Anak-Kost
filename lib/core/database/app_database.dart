@@ -3,6 +3,8 @@ import 'package:drift/drift.dart';
 import '../../features/finance/data/finance_dao.dart';
 import '../../features/agenda/data/agenda_dao.dart';
 import '../../features/bills/data/bills_dao.dart';
+import '../../features/inventory/data/inventory_dao.dart';
+import '../../features/documents/data/documents_dao.dart';
 import 'database_connection.dart';
 import 'tables/profile_and_sync_tables.dart';
 import 'tables/finance_tables.dart';
@@ -64,6 +66,8 @@ part 'app_database.g.dart';
     FinanceDao,
     AgendaDao,
     BillsDao,
+    InventoryDao,
+    DocumentsDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
