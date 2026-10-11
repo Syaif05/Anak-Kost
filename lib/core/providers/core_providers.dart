@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../database/app_database.dart';
+import '../notifications/notification_service.dart';
 import '../security/app_lock_service.dart';
 import '../security/encryption_service.dart';
 import '../security/key_manager.dart';
@@ -33,6 +34,13 @@ final localFileStorageProvider = Provider<LocalFileStorage>((ref) {
 final appLockServiceProvider = Provider<AppLockService>((ref) {
   final encryption = ref.watch(encryptionServiceProvider);
   final service = AppLockService(encryptionService: encryption);
+  service.initialize();
+  return service;
+});
+
+/// Provider singleton untuk NotificationService
+final notificationServiceProvider = Provider<NotificationService>((ref) {
+  final service = NotificationService();
   service.initialize();
   return service;
 });

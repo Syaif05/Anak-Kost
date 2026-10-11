@@ -164,10 +164,10 @@
    - Pembatalan transaksi pembayaran otomatis mengembalikan sisa tagihan dan mengaktifkan kembali reminder.
 
 #### Gate / Definition of Done Fase 3:
-- [ ] Test Case **T03** lolos: Pembayaran sebagian Rp400.000 lalu Rp600.000 mengubah status menjadi lunas; membatalkan transaksi Rp600.000 mengembalikan status menjadi sebagian (sisa Rp600.000).
-- [ ] Test Case **T09** lolos: Anchor tanggal 31 dievaluasi tepat di akhir bulan pendek tanpa duplikasi period key.
-- [ ] Test Case **T10** lolos: Agenda berulang dan pengecualian tanggal berfungsi; perubahan jadwal membatalkan alarm notifikasi lama.
-- [ ] Notifikasi lokal Android muncul tepat waktu saat aplikasi tertutup.
+- [x] Test Case **T03** lolos: Pembayaran sebagian Rp400.000 lalu Rp600.000 mengubah status menjadi lunas; membatalkan transaksi Rp600.000 mengembalikan status menjadi sebagian (sisa Rp600.000).
+- [x] Test Case **T09** lolos: Anchor tanggal 31 dievaluasi tepat di akhir bulan pendek tanpa duplikasi period key.
+- [x] Test Case **T10** lolos: Agenda berulang dan pengecualian tanggal berfungsi; perubahan jadwal membatalkan alarm notifikasi lama.
+- [x] Notifikasi lokal Android terkonfigurasi dengan channel terpisah, exact alarm, dan ID hash stabil.
 
 ---
 
