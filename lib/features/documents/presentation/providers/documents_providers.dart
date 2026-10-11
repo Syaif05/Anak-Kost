@@ -11,10 +11,12 @@ final documentsRepositoryProvider = Provider<DocumentsRepository>((ref) {
   final db = ref.watch(appDatabaseProvider);
   final encryption = ref.watch(encryptionServiceProvider);
   final keyMgr = ref.watch(keyManagerProvider);
+  final storage = ref.watch(localFileStorageProvider);
   return DocumentsRepository(
     db: db,
     encryptionService: encryption,
     keyManager: keyMgr,
+    fileStorage: storage,
   );
 });
 

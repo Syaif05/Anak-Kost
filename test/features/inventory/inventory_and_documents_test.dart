@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -8,6 +9,7 @@ import 'package:anakkost/core/database/app_database.dart';
 import 'package:anakkost/core/notifications/notification_service.dart';
 import 'package:anakkost/core/security/encryption_service.dart';
 import 'package:anakkost/core/security/key_manager.dart';
+import 'package:anakkost/core/storage/local_file_storage.dart';
 import 'package:anakkost/features/finance/data/finance_repository.dart';
 import 'package:anakkost/features/inventory/data/inventory_repository.dart';
 import 'package:anakkost/features/inventory/domain/models/inventory_models.dart';
@@ -28,6 +30,8 @@ void main() {
   late DocumentsRepository documentsRepo;
   late EncryptionService encryptionService;
   late KeyManager keyManager;
+  late LocalFileStorage fileStorage;
+  late Directory tempDir;
 
   setUp(() async {
     db = AppDatabase.inMemory();
@@ -38,6 +42,9 @@ void main() {
       encryptionService: encryptionService,
       secureStorage: mockSecureStorage,
     );
+
+    tempDir = Directory.systemTemp.createTempSync('vault_test_');
+    fileStorage = LocalFileStorage(customBaseDir: tempDir);
 
     when(() => mockSecureStorage.read(key: any(named: 'key')))
         .thenAnswer((_) async => 'mock-device-id');
@@ -71,6 +78,7 @@ void main() {
       encryptionService: encryptionService,
       keyManager: keyManager,
       secureStorage: mockSecureStorage,
+      fileStorage: fileStorage,
     );
 
     // Inisialisasi profil pengguna
@@ -88,6 +96,9 @@ void main() {
 
   tearDown(() async {
     await db.close();
+    if (tempDir.existsSync()) {
+      tempDir.deleteSync(recursive: true);
+    }
   });
 
   group('Inventory & Shopping Module Tests (Fase 4)', () {
@@ -255,6 +266,46 @@ void main() {
             body: any(named: 'body'),
           )).called(1);
     });
+
+    test('Koreksi Stok Fisik Eksplisit (adjustStockTo) memperbarui stok secara akurat dan menolak nilai negatif', () async {
+      // 1. Buat Barang dengan stok awal 5.000 milli-pcs (5 pcs)
+      final itemId = await inventoryRepo.createItem(
+        name: 'Minyak Goreng 1L',
+        baseUnit: 'pcs',
+        minimumQtyMilli: 1000,
+        initialQtyMilli: 5000,
+      );
+
+      // 2. Koreksi stok ke 2 pcs (karena 3 pcs tumpah/rusak)
+      final movId = await inventoryRepo.adjustStockTo(
+        itemId: itemId,
+        targetStockMilli: 2000,
+        reason: 'Hasil opname fisik',
+      );
+      expect(movId, isNotEmpty);
+      expect(await inventoryRepo.dao.getItemStockMilli(itemId), 2000);
+
+      // Verifikasi entri mutasi bertipe 'adjust' dengan delta -3000
+      final movements = await (db.select(db.inventoryMovements)..where((m) => m.inventoryItemId.equals(itemId))).get();
+      final adjustMov = movements.firstWhere((m) => m.movementType == 'adjust');
+      expect(adjustMov.quantityDeltaMilli, -3000);
+
+      // 3. Koreksi stok ke atas menjadi 4 pcs
+      await inventoryRepo.adjustStockTo(
+        itemId: itemId,
+        targetStockMilli: 4000,
+      );
+      expect(await inventoryRepo.dao.getItemStockMilli(itemId), 4000);
+
+      // 4. Koreksi ke angka negatif harus ditolak dengan ArgumentError
+      expect(
+        () => inventoryRepo.adjustStockTo(
+          itemId: itemId,
+          targetStockMilli: -1000,
+        ),
+        throwsA(isA<ArgumentError>()),
+      );
+    });
   });
 
   group('Encrypted Document Vault Tests (Fase 4)', () {
@@ -343,6 +394,73 @@ void main() {
         masterKey: recoveredMasterKey,
       );
       expect(decryptedWithRecoveredKey.documentNumber, '3171012345678901');
+    });
+
+    test('Gate Test T14 Berkas Fisik: Berkas disimpan terenkripsi di sandbox disk; dimuat & didekripsi di RAM privat; salah kunci/rusak gagal aman', () async {
+      final masterKey = keyManager.generateMasterKey();
+      final originalFileBytes = Uint8List.fromList(List.generate(256, (i) => (i * 7) % 256));
+
+      const metadata = DocumentMetadata(
+        title: 'KTP Asli Fisik',
+        documentNumber: '3201012345678901',
+      );
+
+      // 1. Simpan dokumen dengan lampiran berkas fisik
+      final docId = await documentsRepo.createEncryptedDocument(
+        documentType: 'ktp',
+        metadata: metadata,
+        masterKey: masterKey,
+        fileBytes: originalFileBytes,
+        mediaKind: 'photo',
+        mimeType: 'image/jpeg',
+      );
+
+      // 2. Ambil detail dokumen dan lampiran dari DAO
+      final docWithDetails = await documentsRepo.dao.getDocument(docId);
+      expect(docWithDetails, isNotNull);
+      expect(docWithDetails!.attachments, hasLength(1));
+
+      final attachment = docWithDetails.attachments.first;
+      expect(attachment.storagePath, isNotEmpty);
+      expect(attachment.mimeType, 'image/jpeg');
+
+      // 3. Verifikasi berkas fisik ada di disk sandbox dan isinya adalah CIPHERTEXT (bukan plaintext)
+      final diskFile = File(attachment.storagePath);
+      expect(diskFile.existsSync(), isTrue);
+
+      final diskCiphertext = await diskFile.readAsBytes();
+      expect(diskCiphertext.length, greaterThanOrEqualTo(originalFileBytes.length));
+      expect(diskCiphertext, isNot(equals(originalFileBytes)));
+
+      // 4. Muat dan dekripsi di RAM privat menggunakan loadAndDecryptAttachment -> Sukses identik!
+      final decryptedBytes = await documentsRepo.loadAndDecryptAttachment(
+        attachment: attachment,
+        masterKey: masterKey,
+      );
+      expect(decryptedBytes, equals(originalFileBytes));
+
+      // 5. Dekripsi dengan kunci yang salah -> Gagal aman
+      final wrongKey = keyManager.generateMasterKey();
+      expect(
+        () => documentsRepo.loadAndDecryptAttachment(
+          attachment: attachment,
+          masterKey: wrongKey,
+        ),
+        throwsA(anything),
+      );
+
+      // 6. Ciphertext rusak di disk -> Gagal aman
+      final tamperedBytes = Uint8List.fromList(diskCiphertext);
+      tamperedBytes[10] ^= 0xFF; // Flip bit
+      await diskFile.writeAsBytes(tamperedBytes);
+
+      expect(
+        () => documentsRepo.loadAndDecryptAttachment(
+          attachment: attachment,
+          masterKey: masterKey,
+        ),
+        throwsA(anything),
+      );
     });
   });
 }

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../database/app_database.dart';
+import '../media/image_pipeline_service.dart';
 import '../notifications/notification_service.dart';
 import '../security/app_lock_service.dart';
 import '../security/encryption_service.dart';
@@ -43,4 +44,9 @@ final notificationServiceProvider = Provider<NotificationService>((ref) {
   final service = NotificationService();
   service.initialize();
   return service;
+});
+
+/// Provider singleton untuk ImagePipelineService
+final imagePipelineServiceProvider = Provider<ImagePipelineService>((ref) {
+  return ImagePipelineService();
 });

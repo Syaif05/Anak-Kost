@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/providers/core_providers.dart';
 import '../../domain/models/document_models.dart';
 import '../providers/documents_providers.dart';
 
@@ -25,6 +26,10 @@ class _AddDocumentDialogState extends ConsumerState<AddDocumentDialog> {
   String _documentType = 'ktp';
   DateTime? _expiryDate;
   bool _isLoading = false;
+
+  Uint8List? _pickedFileBytes;
+  String? _pickedFileName;
+  String? _pickedMimeType;
 
   final Map<String, String> _typeLabels = {
     'ktp': 'KTP (Identitas)',
@@ -52,6 +57,29 @@ class _AddDocumentDialogState extends ConsumerState<AddDocumentDialog> {
     );
     if (picked != null) {
       setState(() => _expiryDate = picked);
+    }
+  }
+
+  Future<void> _pickPhoto(bool fromCamera) async {
+    try {
+      final imageService = ref.read(imagePipelineServiceProvider);
+      final result = fromCamera
+          ? await imageService.captureImageFromCamera()
+          : await imageService.pickImageFromGallery();
+
+      if (result != null) {
+        setState(() {
+          _pickedFileBytes = result.bytes;
+          _pickedFileName = result.fileName;
+          _pickedMimeType = result.mimeType;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal memilih foto: $e')),
+        );
+      }
     }
   }
 
@@ -83,12 +111,15 @@ class _AddDocumentDialogState extends ConsumerState<AddDocumentDialog> {
         metadata: metadata,
         masterKey: widget.masterKey,
         expiresOn: expiryStr,
+        fileBytes: _pickedFileBytes,
+        mimeType: _pickedMimeType,
+        mediaKind: 'photo',
       );
 
       if (mounted) {
         Navigator.pop(context, true);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Dokumen berhasil dienkripsi dan disimpan di brankas!')),
+          const SnackBar(content: Text('Dokumen & berkas berhasil dienkripsi ke brankas!')),
         );
       }
     } catch (e) {
@@ -206,6 +237,92 @@ class _AddDocumentDialogState extends ConsumerState<AddDocumentDialog> {
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                   ),
+                  const SizedBox(height: 12),
+
+                  // Section Lampiran Berkas / Foto
+                  if (_pickedFileBytes == null) ...[
+                    OutlinedButton.icon(
+                      icon: const Icon(Icons.add_a_photo_outlined),
+                      label: const Text('Lampirkan Foto / Berkas (AES-256)'),
+                      onPressed: () {
+                        showModalBottomSheet(
+                          context: context,
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                          ),
+                          builder: (ctx) => SafeArea(
+                            child: Wrap(
+                              children: [
+                                ListTile(
+                                  leading: const Icon(Icons.photo_camera),
+                                  title: const Text('Ambil dari Kamera'),
+                                  onTap: () {
+                                    Navigator.pop(ctx);
+                                    _pickPhoto(true);
+                                  },
+                                ),
+                                ListTile(
+                                  leading: const Icon(Icons.photo_library),
+                                  title: const Text('Pilih dari Galeri (Photo Picker)'),
+                                  onTap: () {
+                                    Navigator.pop(ctx);
+                                    _pickPhoto(false);
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                  ] else ...[
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primaryContainer.withAlpha(80),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: theme.colorScheme.primary.withAlpha(80)),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.shield, color: theme.colorScheme.primary, size: 24),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  _pickedFileName ?? 'Lampiran Dokumen',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                                ),
+                                Text(
+                                  '${(_pickedFileBytes!.length / 1024).toStringAsFixed(1)} KB • Siap Dienkripsi AES-256',
+                                  style: TextStyle(color: theme.colorScheme.onSurfaceVariant, fontSize: 11),
+                                ),
+                              ],
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.close, size: 20),
+                            onPressed: () {
+                              setState(() {
+                                _pickedFileBytes = null;
+                                _pickedFileName = null;
+                                _pickedMimeType = null;
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+
                   const SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: _isLoading ? null : _save,

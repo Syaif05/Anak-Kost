@@ -6,12 +6,16 @@ import 'package:path_provider/path_provider.dart';
 /// Pengelola Penyimpanan Berkas Privat Klien Android (Ciphertext Sandbox)
 /// Sesuai PRD GAMINI.md Bagian 3.6.4 & Bagian 7.6
 class LocalFileStorage {
+  final Directory? customBaseDir;
+
+  LocalFileStorage({this.customBaseDir});
+
   static const String mediaSubdir = 'secure_media';
   static const String thumbnailSubdir = 'secure_thumbnails';
 
   /// Mendapatkan direktori privat untuk berkas media terenkripsi
   Future<Directory> getMediaDirectory() async {
-    final docsDir = await getApplicationDocumentsDirectory();
+    final docsDir = customBaseDir ?? await getApplicationDocumentsDirectory();
     final mediaDir = Directory(p.join(docsDir.path, mediaSubdir));
     if (!await mediaDir.exists()) {
       await mediaDir.create(recursive: true);
@@ -21,7 +25,7 @@ class LocalFileStorage {
 
   /// Mendapatkan direktori privat untuk thumbnail terenkripsi
   Future<Directory> getThumbnailDirectory() async {
-    final docsDir = await getApplicationDocumentsDirectory();
+    final docsDir = customBaseDir ?? await getApplicationDocumentsDirectory();
     final thumbDir = Directory(p.join(docsDir.path, thumbnailSubdir));
     if (!await thumbDir.exists()) {
       await thumbDir.create(recursive: true);

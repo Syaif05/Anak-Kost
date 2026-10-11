@@ -7,6 +7,7 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/security/encryption_service.dart';
 import '../../../core/security/key_manager.dart';
+import '../../../core/storage/local_file_storage.dart';
 import '../domain/models/document_models.dart';
 import 'documents_dao.dart';
 
@@ -16,6 +17,7 @@ class DocumentsRepository {
   final EncryptionService _encryptionService;
   final KeyManager _keyManager;
   final FlutterSecureStorage _secureStorage;
+  final LocalFileStorage _fileStorage;
   final Uuid _uuid = const Uuid();
 
   DocumentsRepository({
@@ -24,15 +26,18 @@ class DocumentsRepository {
     EncryptionService? encryptionService,
     KeyManager? keyManager,
     FlutterSecureStorage? secureStorage,
+    LocalFileStorage? fileStorage,
   })  : _db = db,
         _dao = dao ?? DocumentsDao(db),
         _encryptionService = encryptionService ?? EncryptionService(),
         _keyManager = keyManager ?? KeyManager(encryptionService: encryptionService, secureStorage: secureStorage),
-        _secureStorage = secureStorage ?? const FlutterSecureStorage();
+        _secureStorage = secureStorage ?? const FlutterSecureStorage(),
+        _fileStorage = fileStorage ?? LocalFileStorage();
 
   DocumentsDao get dao => _dao;
   KeyManager get keyManager => _keyManager;
   EncryptionService get encryptionService => _encryptionService;
+  LocalFileStorage get fileStorage => _fileStorage;
 
   Future<String> _getDeviceId() async {
     var id = await _secureStorage.read(key: AppConstants.secKeyDeviceId);
@@ -116,6 +121,10 @@ class DocumentsRepository {
         );
 
         final ciphertextHash = await _encryptionService.sha256Hex(encryptedFile.combinedWithTag);
+        final savedPath = await _fileStorage.saveCiphertext(
+          fileId: attachmentId,
+          ciphertextBytes: encryptedFile.combinedWithTag,
+        );
 
         await _db.into(_db.attachments).insert(
               AttachmentsCompanion.insert(
@@ -123,7 +132,7 @@ class DocumentsRepository {
                 userId: userId,
                 mediaKind: mediaKind ?? 'photo',
                 mimeType: mimeType ?? 'image/jpeg',
-                storagePath: 'vault/$attachmentId.enc',
+                storagePath: savedPath,
                 ciphertextSha256: ciphertextHash,
                 byteSize: encryptedFile.combinedWithTag.length,
                 cryptoContextId: cryptoContextId,
@@ -228,6 +237,23 @@ class DocumentsRepository {
       nonce: filePayload.nonce,
       tag: filePayload.tag,
       aad: attachment.id.codeUnits,
+    );
+  }
+
+  /// 3b. Muat berkas ciphertext dari storage privat dan dekripsi di memori privat (DOC03 & T14)
+  Future<Uint8List> loadAndDecryptAttachment({
+    required Attachment attachment,
+    required Uint8List masterKey,
+  }) async {
+    final ciphertextBytes = await _fileStorage.readCiphertext(attachment.storagePath);
+    if (ciphertextBytes == null) {
+      throw StateError('Berkas ciphertext lampiran tidak ditemukan pada path: ${attachment.storagePath}');
+    }
+
+    return decryptAttachmentFile(
+      attachment: attachment,
+      encryptedFileBytes: ciphertextBytes,
+      masterKey: masterKey,
     );
   }
 

@@ -204,6 +204,32 @@ class InventoryRepository {
     return movId;
   }
 
+  /// 2b. Koreksi / Penyesuaian Stok Fisik Eksplisit (STK03 & Gate DoD)
+  /// Mengatur ulang stok barang ke target fisik tertentu (misal setelah opname fisik).
+  Future<String> adjustStockTo({
+    required String itemId,
+    required int targetStockMilli,
+    String? reason,
+  }) async {
+    if (targetStockMilli < 0) {
+      throw ArgumentError('Stok hasil penyesuaian tidak boleh bernilai negatif');
+    }
+    final itemWithStock = await _dao.getItemWithStock(itemId);
+    if (itemWithStock == null) {
+      throw ArgumentError('Barang inventaris tidak ditemukan');
+    }
+    final delta = targetStockMilli - itemWithStock.currentStockMilli;
+    if (delta == 0) {
+      return ''; // Tidak ada perubahan kuantitas
+    }
+    return recordMovement(
+      itemId: itemId,
+      movementType: 'adjust',
+      quantityDeltaMilli: delta,
+      reason: reason ?? 'Koreksi stok fisik ke ${StockUnit.format(targetStockMilli, itemWithStock.item.baseUnit)}',
+    );
+  }
+
   /// 3. Buat Daftar Belanja (STK01)
   Future<String> createShoppingList({
     required String name,

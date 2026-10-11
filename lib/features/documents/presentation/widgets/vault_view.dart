@@ -1,7 +1,9 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pdfrx/pdfrx.dart';
 
+import '../../../../core/database/app_database.dart';
 import '../../../../core/providers/core_providers.dart';
 import '../../domain/models/document_models.dart';
 import '../providers/documents_providers.dart';
@@ -460,11 +462,190 @@ class _EncryptedDocumentCard extends ConsumerWidget {
                     }).toList(),
                   ),
                 ],
+
+                // Lampiran Berkas Terenkripsi (DOC03 & Gate T14)
+                if (docWithDetails.attachments.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  InkWell(
+                    borderRadius: BorderRadius.circular(10),
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (_) => _SecureAttachmentViewerDialog(
+                          attachment: docWithDetails.attachments.first,
+                          masterKey: masterKey,
+                          title: meta.title,
+                        ),
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primaryContainer.withAlpha(80),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: theme.colorScheme.primary.withAlpha(70)),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.shield, size: 18, color: theme.colorScheme.primary),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Buka Lampiran Terenkripsi (${(docWithDetails.attachments.first.byteSize / 1024).toStringAsFixed(1)} KB)',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: theme.colorScheme.onPrimaryContainer,
+                              ),
+                            ),
+                          ),
+                          Icon(Icons.open_in_new, size: 18, color: theme.colorScheme.primary),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
         );
       },
+    );
+  }
+}
+
+/// Secure Attachment Viewer Dialog (DOC03 & Gate T14)
+/// Mendekripsi berkas on-the-fly di RAM dan membersihkan memori saat ditutup
+class _SecureAttachmentViewerDialog extends ConsumerStatefulWidget {
+  final Attachment attachment;
+  final Uint8List masterKey;
+  final String title;
+
+  const _SecureAttachmentViewerDialog({
+    required this.attachment,
+    required this.masterKey,
+    required this.title,
+  });
+
+  @override
+  ConsumerState<_SecureAttachmentViewerDialog> createState() => _SecureAttachmentViewerDialogState();
+}
+
+class _SecureAttachmentViewerDialogState extends ConsumerState<_SecureAttachmentViewerDialog> {
+  Uint8List? _decryptedBytes;
+  String? _error;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAttachment();
+  }
+
+  @override
+  void dispose() {
+    // Bersihkan memori dekripsi segera saat viewer ditutup (DOC03)
+    _decryptedBytes = null;
+    super.dispose();
+  }
+
+  Future<void> _loadAttachment() async {
+    try {
+      final repo = ref.read(documentsRepositoryProvider);
+      final bytes = await repo.loadAndDecryptAttachment(
+        attachment: widget.attachment,
+        masterKey: widget.masterKey,
+      );
+      if (mounted) {
+        setState(() {
+          _decryptedBytes = bytes;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = e.toString();
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isPdf = widget.attachment.mimeType.toLowerCase().contains('pdf');
+
+    return Dialog.fullscreen(
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(widget.title),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ],
+        ),
+        body: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              color: Colors.amber.withAlpha(30),
+              child: const Row(
+                children: [
+                  Icon(Icons.security, size: 16, color: Colors.amber),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Tampilan Aman: Didekripsi di RAM privat. Tidak disimpan dalam plaintext di storage umum.',
+                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: _isLoading
+                  ? const Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          CircularProgressIndicator(),
+                          SizedBox(height: 12),
+                          Text('Mendekripsi berkas AES-256-GCM...'),
+                        ],
+                      ),
+                    )
+                  : _error != null
+                      ? Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(24),
+                            child: Text(
+                              'Gagal mendekripsi lampiran:\n$_error',
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(color: Colors.red),
+                            ),
+                          ),
+                        )
+                      : isPdf
+                          ? PdfViewer.data(
+                              _decryptedBytes!,
+                              sourceName: '${widget.title}.pdf',
+                            )
+                          : InteractiveViewer(
+                              maxScale: 4.0,
+                              child: Center(
+                                child: Image.memory(
+                                  _decryptedBytes!,
+                                  fit: BoxFit.contain,
+                                ),
+                              ),
+                            ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
