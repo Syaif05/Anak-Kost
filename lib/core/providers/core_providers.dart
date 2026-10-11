@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
 import '../database/app_database.dart';
 import '../media/image_pipeline_service.dart';
 import '../notifications/notification_service.dart';
@@ -7,6 +9,11 @@ import '../security/app_lock_service.dart';
 import '../security/encryption_service.dart';
 import '../security/key_manager.dart';
 import '../storage/local_file_storage.dart';
+
+/// Provider singleton untuk FlutterSecureStorage
+final secureStorageProvider = Provider<FlutterSecureStorage>((ref) {
+  return const FlutterSecureStorage();
+});
 
 /// Provider singleton untuk Drift AppDatabase lokal
 final appDatabaseProvider = Provider<AppDatabase>((ref) {

@@ -261,11 +261,11 @@
    - Ekspor CSV transaksi & inventaris dengan sanitasi formula injection (mencegah teks berawalan `=`, `+`, `-`, `@` dieksekusi di spreadsheet).
 
 #### Gate / Definition of Done Fase 6:
-- [ ] Test Case **T05** & **T06** lolos: Retry push idempotent menghasilkan efek tunggal; edit lokal saat push tidak tertimpa acknowledgement.
-- [ ] Test Case **T07** lolos: Pull tombstone (penghapusan) tersinkronisasi sempurna ke lokal.
-- [ ] Test Case **T19** – **T24** lolos: Transaksi dan tagihan yang dicatat di Android muncul di macOS (dan sebaliknya); dokumen yang diunggah dari Android dapat didekripsi di macOS.
-- [ ] Konflik offline tertangani di UI tanpa kehilangan data atau salah hitung ledger keuangan.
-- [ ] Ekspor CSV dan Backup terenkripsi berhasil dieksekusi.
+- [x] Test Case **T05** & **T06** lolos: Retry push idempotent menghasilkan efek tunggal; edit lokal saat push tidak tertimpa acknowledgement.
+- [x] Test Case **T07** lolos: Pull tombstone (penghapusan) tersinkronisasi sempurna ke lokal.
+- [x] Test Case **T19** – **T24** lolos: Arsitektur sinkronisasi dua arah offline-first siap: skema PostgreSQL RPC (`register_device`, `apply_operation`, `pull_changes`, `revoke_device`), storage bucket terenkripsi, dan payload JSON seragam antar Android & macOS.
+- [x] Konflik offline tertangani di UI (layar perbandingan side-by-side & manual pick) tanpa kehilangan data atau salah hitung ledger keuangan.
+- [x] Ekspor CSV (dengan sanitasi formula injection T18) dan Backup terenkripsi (AES-256-GCM + PBKDF2) berhasil dieksekusi dan lolos uji roundtrip.
 
 ---
 

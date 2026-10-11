@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -22,8 +23,8 @@ class DashboardScreen extends StatelessWidget {
           ),
           IconButton(
             icon: const Icon(Icons.settings_outlined),
-            onPressed: () {},
-            tooltip: 'Pengaturan',
+            onPressed: () => context.push('/sync-settings'),
+            tooltip: 'Pengaturan & Sinkronisasi',
           ),
         ],
       ),

@@ -15,6 +15,8 @@ import '../features/finance/presentation/transfer_screen.dart';
 import '../features/inventory/presentation/inventory_screen.dart';
 import '../features/agenda/presentation/agenda_screen.dart';
 import '../features/bills/presentation/bills_screen.dart';
+import '../features/sync/presentation/conflict_resolution_screen.dart';
+import '../features/sync/presentation/sync_settings_screen.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -53,6 +55,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/setup-pin',
         builder: (context, state) => const SetupPinScreen(),
+      ),
+      GoRoute(
+        path: '/sync-settings',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const SyncSettingsScreen(),
+      ),
+      GoRoute(
+        path: '/conflicts',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const ConflictResolutionScreen(),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
