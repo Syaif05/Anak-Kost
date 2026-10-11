@@ -132,15 +132,15 @@ class SupabaseConfig {
 Karena kredensial sudah tersimpan di file konfigurasi dan `main.dart` membacanya secara otomatis, Anda **cukup menjalankan perintah singkat berikut**:
 
 ```powershell
-flutter run -d android
+flutter run -d "SM S926B"
 ```
 
-Atau pilih target **Samsung Galaxy S24+** langsung dari menu debugger IDE Anda (VS Code / Android Studio).
-
-*(Opsional)* Jika di kemudian hari Anda ingin mengganti kredensial saat build release tanpa mengubah file kode, Anda tetap dapat menggunakan `--dart-define`:
+Atau menggunakan ID wireless ADB perangkat Anda:
 ```powershell
-flutter run -d android --dart-define=SUPABASE_URL=https://YOUR_PROJECT_ID.supabase.co --dart-define=SUPABASE_ANON_KEY=YOUR_KEY
+flutter run -d adb-RRCX401CD8R-YjODZp._adb-tls-connect._tcp
 ```
+
+Atau cukup pilih perangkat **SM S926B** di status bar IDE Anda (VS Code / Android Studio) dan tekan **F5**.
 
 
 ---
