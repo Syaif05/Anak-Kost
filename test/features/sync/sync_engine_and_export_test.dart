@@ -10,6 +10,7 @@ import 'package:anakkost/core/security/encryption_service.dart';
 import 'package:anakkost/core/sync/backup_and_export_service.dart';
 import 'package:anakkost/core/sync/models/sync_models.dart';
 import 'package:anakkost/core/sync/supabase_sync_service.dart';
+import 'package:anakkost/core/config/supabase_config.dart';
 import 'package:anakkost/core/sync/sync_engine.dart';
 
 class MockSecureStorage extends Mock implements FlutterSecureStorage {}
@@ -310,5 +311,25 @@ void main() {
         throwsA(anything),
       );
     });
+
+    test('SupabaseConfig: URL sanitizer membersihkan trailing slash dan rest/v1', () {
+      expect(
+        SupabaseConfig.sanitizeUrl('https://ghqcrtukclhbqlxsebss.supabase.co/rest/v1/'),
+        'https://ghqcrtukclhbqlxsebss.supabase.co',
+      );
+      expect(
+        SupabaseConfig.sanitizeUrl('https://ghqcrtukclhbqlxsebss.supabase.co/rest/v1'),
+        'https://ghqcrtukclhbqlxsebss.supabase.co',
+      );
+      expect(
+        SupabaseConfig.sanitizeUrl('https://ghqcrtukclhbqlxsebss.supabase.co/'),
+        'https://ghqcrtukclhbqlxsebss.supabase.co',
+      );
+      expect(
+        SupabaseConfig.sanitizeUrl('https://ghqcrtukclhbqlxsebss.supabase.co'),
+        'https://ghqcrtukclhbqlxsebss.supabase.co',
+      );
+    });
   });
 }
+

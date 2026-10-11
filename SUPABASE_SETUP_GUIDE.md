@@ -117,42 +117,30 @@ Script migrasi otomatis mendaftarkan 2 bucket, namun Anda dapat memverifikasinya
 
 Di proyek Flutter Android (dan client macOS yang sedang Anda bangun):
 
-### 1. Inisialisasi Supabase di `main.dart`
-File `lib/main.dart` sudah dikonfigurasi untuk membaca variabel lingkungan secara dinamis:
+### 1. Konfigurasi Kredensial di File (`lib/core/config/supabase_config.dart`)
+Untuk kemudahan dan kepraktisan, kredensial URL dan Anon Key sudah ditaruh langsung di file [`lib/core/config/supabase_config.dart`](file:///d:/Pemrograman/Aplikasi/AnakKost_Android/lib/core/config/supabase_config.dart):
 
 ```dart
-const supabaseUrl = String.fromEnvironment('SUPABASE_URL');
-const supabaseAnonKey = String.fromEnvironment('SUPABASE_ANON_KEY');
-
-if (supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty) {
-  try {
-    await Supabase.initialize(
-      url: supabaseUrl,
-      anonKey: supabaseAnonKey,
-    );
-  } catch (e) {
-    debugPrint('Supabase init skipped/error: $e');
-  }
+class SupabaseConfig {
+  static const String defaultUrl = 'https://ghqcrtukclhbqlxsebss.supabase.co';
+  static const String defaultAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
 }
 ```
+*Catatan:* File ini juga dilengkapi pembersih URL otomatis (`sanitizeUrl`), sehingga jika Anda tidak sengaja meng-copy path `/rest/v1/` dari dashboard Supabase, sistem akan membersihkannya secara otomatis menjadi format root URL yang valid.
 
-### 2. Menjalankan Aplikasi di Perangkat Android (Galaxy S24+)
-Karena proyek ini adalah aplikasi Android (`AnakKost_Android`), jika Anda menjalankan `flutter run` di terminal Windows tanpa opsi perangkat, Flutter akan mencoba menjalankan target Windows Desktop dan memunculkan pesan error `No Windows desktop project configured` atau meminta memilih ID perangkat.
-
-**Gunakan flag target `-d android` (atau ID perangkat Galaxy S24+ Anda)**.
-
-Pada **Windows PowerShell**, sintaks yang benar (agar tanda kutip tidak merusak parsing argumen):
+### 2. Menjalankan Aplikasi di Galaxy S24+ (Sangat Praktis)
+Karena kredensial sudah tersimpan di file konfigurasi dan `main.dart` membacanya secara otomatis, Anda **cukup menjalankan perintah singkat berikut**:
 
 ```powershell
-# Format tanpa tanda kutip di tengah (Paling Direkomendasikan di PowerShell):
-flutter run -d android --dart-define=SUPABASE_URL=https://YOUR_PROJECT_ID.supabase.co --dart-define=SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
-
-# Atau dengan tanda kutip di seluruh argumen:
-flutter run -d android "--dart-define=SUPABASE_URL=https://YOUR_PROJECT_ID.supabase.co" "--dart-define=SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY"
+flutter run -d android
 ```
 
-> 💡 **Tips:**
-> Jika Galaxy S24+ terhubung via Wireless Debugging atau USB, Anda juga dapat melihat ID-nya via `flutter devices` (misal: `flutter run -d adb-RRCX401CD8R-YjODZp._adb-tls-connect._tcp ...`).
+Atau pilih target **Samsung Galaxy S24+** langsung dari menu debugger IDE Anda (VS Code / Android Studio).
+
+*(Opsional)* Jika di kemudian hari Anda ingin mengganti kredensial saat build release tanpa mengubah file kode, Anda tetap dapat menggunakan `--dart-define`:
+```powershell
+flutter run -d android --dart-define=SUPABASE_URL=https://YOUR_PROJECT_ID.supabase.co --dart-define=SUPABASE_ANON_KEY=YOUR_KEY
+```
 
 
 ---
