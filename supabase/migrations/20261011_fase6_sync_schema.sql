@@ -388,6 +388,7 @@ $$;
 DO $$
 DECLARE
     tbl text;
+    col_name text;
 BEGIN
     FOR tbl IN
         SELECT table_name
@@ -400,13 +401,19 @@ BEGIN
             'documents', 'attachments', 'attachment_links'
           )
     LOOP
+        IF tbl = 'profiles' THEN
+            col_name := 'id';
+        ELSE
+            col_name := 'user_id';
+        END IF;
+
         EXECUTE format('
             DROP POLICY IF EXISTS %I_owner_policy ON public.%I;
             CREATE POLICY %I_owner_policy ON public.%I
                 FOR ALL TO authenticated
-                USING (user_id = auth.uid() OR id = auth.uid()::text)
-                WITH CHECK (user_id = auth.uid() OR id = auth.uid()::text);
-        ', tbl, tbl, tbl, tbl);
+                USING (%I = auth.uid())
+                WITH CHECK (%I = auth.uid());
+        ', tbl, tbl, tbl, tbl, col_name, col_name);
     END LOOP;
 END $$;
 

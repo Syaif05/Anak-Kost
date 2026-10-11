@@ -118,44 +118,42 @@ Script migrasi otomatis mendaftarkan 2 bucket, namun Anda dapat memverifikasinya
 Di proyek Flutter Android (dan client macOS yang sedang Anda bangun):
 
 ### 1. Inisialisasi Supabase di `main.dart`
-Tambahkan inisialisasi Supabase sebelum `runApp`:
+File `lib/main.dart` sudah dikonfigurasi untuk membaca variabel lingkungan secara dinamis:
 
 ```dart
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+const supabaseUrl = String.fromEnvironment('SUPABASE_URL');
+const supabaseAnonKey = String.fromEnvironment('SUPABASE_ANON_KEY');
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-
-  // Inisialisasi Supabase
-  await Supabase.initialize(
-    url: const String.fromEnvironment(
-      'SUPABASE_URL',
-      defaultValue: 'https://YOUR_PROJECT_ID.supabase.co',
-    ),
-    anonKey: const String.fromEnvironment(
-      'SUPABASE_ANON_KEY',
-      defaultValue: 'YOUR_SUPABASE_ANON_KEY',
-    ),
-  );
-
-  runApp(
-    const ProviderScope(
-      child: AnakKostApp(),
-    ),
-  );
+if (supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty) {
+  try {
+    await Supabase.initialize(
+      url: supabaseUrl,
+      anonKey: supabaseAnonKey,
+    );
+  } catch (e) {
+    debugPrint('Supabase init skipped/error: $e');
+  }
 }
 ```
 
-### 2. Menjalankan Aplikasi dengan Environment Variables
-Anda dapat menyuntikkan kredensial saat build atau run:
+### 2. Menjalankan Aplikasi di Perangkat Android (Galaxy S24+)
+Karena proyek ini adalah aplikasi Android (`AnakKost_Android`), jika Anda menjalankan `flutter run` di terminal Windows tanpa opsi perangkat, Flutter akan mencoba menjalankan target Windows Desktop dan memunculkan pesan error `No Windows desktop project configured` atau meminta memilih ID perangkat.
 
-```bash
-flutter run --dart-define=SUPABASE_URL="https://YOUR_PROJECT_ID.supabase.co" --dart-define=SUPABASE_ANON_KEY="YOUR_KEY"
+**Gunakan flag target `-d android` (atau ID perangkat Galaxy S24+ Anda)**.
+
+Pada **Windows PowerShell**, sintaks yang benar (agar tanda kutip tidak merusak parsing argumen):
+
+```powershell
+# Format tanpa tanda kutip di tengah (Paling Direkomendasikan di PowerShell):
+flutter run -d android --dart-define=SUPABASE_URL=https://YOUR_PROJECT_ID.supabase.co --dart-define=SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
+
+# Atau dengan tanda kutip di seluruh argumen:
+flutter run -d android "--dart-define=SUPABASE_URL=https://YOUR_PROJECT_ID.supabase.co" "--dart-define=SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY"
 ```
 
-Atau menggunakan file `.env` dengan package `flutter_dotenv`.
+> 💡 **Tips:**
+> Jika Galaxy S24+ terhubung via Wireless Debugging atau USB, Anda juga dapat melihat ID-nya via `flutter devices` (misal: `flutter run -d adb-RRCX401CD8R-YjODZp._adb-tls-connect._tcp ...`).
+
 
 ---
 
