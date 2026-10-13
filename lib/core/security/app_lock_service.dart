@@ -48,11 +48,16 @@ class AppLockService extends ChangeNotifier {
 
   /// Inisialisasi status kunci aplikasi
   Future<void> initialize() async {
-    final pinHash = await _secureStorage.read(key: AppConstants.secKeyAppPinHash);
-    if (pinHash == null) {
+    try {
+      final pinHash = await _secureStorage.read(key: AppConstants.secKeyAppPinHash);
+      if (pinHash == null) {
+        _status = AppLockStatus.notConfigured;
+      } else {
+        _status = AppLockStatus.locked;
+      }
+    } catch (e) {
+      debugPrint('Error reading pinHash from secure storage: $e');
       _status = AppLockStatus.notConfigured;
-    } else {
-      _status = AppLockStatus.locked;
     }
 
     try {

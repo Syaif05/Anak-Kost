@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -42,14 +43,20 @@ final localFileStorageProvider = Provider<LocalFileStorage>((ref) {
 final appLockServiceProvider = Provider<AppLockService>((ref) {
   final encryption = ref.watch(encryptionServiceProvider);
   final service = AppLockService(encryptionService: encryption);
-  service.initialize();
+  // Fire-and-forget async init wrapped in error handler
+  service.initialize().catchError((e) {
+    debugPrint('AppLockService init error (non-fatal): $e');
+  });
   return service;
 });
 
 /// Provider singleton untuk NotificationService
 final notificationServiceProvider = Provider<NotificationService>((ref) {
   final service = NotificationService();
-  service.initialize();
+  // Fire-and-forget async init wrapped in error handler
+  service.initialize().catchError((e) {
+    debugPrint('NotificationService init error (non-fatal): $e');
+  });
   return service;
 });
 

@@ -49,7 +49,15 @@ class SupabaseSyncService implements ISupabaseSyncService {
   final SupabaseClient? _client;
 
   SupabaseSyncService({SupabaseClient? client})
-      : _client = client ?? (Supabase.instance.isInitialized ? Supabase.instance.client : null);
+      : _client = client ?? _safeGetClient();
+
+  static SupabaseClient? _safeGetClient() {
+    try {
+      return Supabase.instance.client;
+    } catch (_) {
+      return null;
+    }
+  }
 
   @override
   bool get isAuthenticated => _client?.auth.currentUser != null;
