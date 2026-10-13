@@ -146,7 +146,7 @@ class AppLockService extends ChangeNotifier {
   }
 
   /// Membuka aplikasi menggunakan biometrik perangkat
-  Future<bool> unlockWithBiometrics({String reason = 'Buka aplikasi Anak Kost'}) async {
+  Future<bool> unlockWithBiometrics({String reason = 'Buka aplikasi Dompet Kos'}) async {
     if (!_isBiometricsSupported) return false;
 
     // Periksa apakah cooldown sedang aktif

@@ -133,7 +133,7 @@ class _LockScreenState extends ConsumerState<LockScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                'Buka aplikasi Anak Kost Anda',
+                'Buka aplikasi Dompet Kos Anda',
                 style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.outline),
               ),
               const SizedBox(height: 32),

@@ -9,7 +9,7 @@ class DashboardScreen extends StatelessWidget {
     final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Anak Kost', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('Dompet Kos', style: TextStyle(fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
             icon: const Icon(Icons.search),

@@ -1,7 +1,7 @@
 /// Konstanta global aplikasi Anak Kost (Android Client)
 /// Sesuai spesifikasi PRD GAMINI.md v1.1
 abstract class AppConstants {
-  static const String appName = 'Anak Kost';
+  static const String appName = 'Dompet Kos';
   static const String appVersion = '1.1.0';
   static const int schemaVersion = 1;
 

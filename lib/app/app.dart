@@ -34,7 +34,7 @@ class _AnakKostAppState extends ConsumerState<AnakKostApp> {
     final router = ref.watch(appRouterProvider);
 
     return MaterialApp.router(
-      title: 'Anak Kost',
+      title: 'Dompet Kos',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme(),
       darkTheme: AppTheme.darkTheme(isAmoled: true),
