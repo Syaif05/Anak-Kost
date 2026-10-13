@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../app/theme.dart';
 import '../../../../core/constants/money.dart';
 import '../providers/finance_providers.dart';
 
@@ -17,26 +18,39 @@ class FinanceChartWidget extends ConsumerWidget {
     final txListAsync = ref.watch(transactionsStreamProvider(params));
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Card(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        elevation: 0,
-        color: Theme.of(context).colorScheme.surfaceContainerHighest.withAlpha(60),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Tren Pengeluaran 7 Hari',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppTheme.surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: AppTheme.borderColor),
+        ),
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Tren Pengeluaran 7 Hari',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                    color: AppTheme.textPrimary,
                   ),
-                  Icon(Icons.bar_chart, size: 20, color: Theme.of(context).colorScheme.primary),
-                ],
-              ),
+                ),
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: AppTheme.surfaceSecondary,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.bar_chart_rounded, size: 18, color: AppTheme.primaryTeal),
+                ),
+              ],
+            ),
               const SizedBox(height: 16),
               txListAsync.when(
                 data: (transactions) {
@@ -115,7 +129,7 @@ class FinanceChartWidget extends ConsumerWidget {
                             barRods: [
                               BarChartRodData(
                                 toY: dailyAmounts[index].toDouble(),
-                                color: Theme.of(context).colorScheme.primary,
+                                color: AppTheme.primaryTeal,
                                 width: 14,
                                 borderRadius: const BorderRadius.vertical(top: Radius.circular(6)),
                               ),
@@ -138,7 +152,6 @@ class FinanceChartWidget extends ConsumerWidget {
             ],
           ),
         ),
-      ),
-    );
+      );
   }
 }

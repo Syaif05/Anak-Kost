@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../app/theme.dart';
 import '../../../core/providers/core_providers.dart';
 
 class SetupPinScreen extends ConsumerStatefulWidget {
@@ -81,10 +82,10 @@ class _SetupPinScreenState extends ConsumerState<SetupPinScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final currentPin = _isConfirming ? _confirmPin : _firstPin;
 
     return Scaffold(
+      backgroundColor: AppTheme.background,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -92,15 +93,28 @@ class _SetupPinScreenState extends ConsumerState<SetupPinScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Spacer(),
-              Icon(
-                Icons.shield_outlined,
-                size: 64,
-                color: theme.colorScheme.primary,
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: AppTheme.surfaceSecondary,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: AppTheme.borderColor),
+                ),
+                child: const Icon(
+                  Icons.shield_outlined,
+                  size: 30,
+                  color: AppTheme.primaryTeal,
+                ),
               ),
               const SizedBox(height: 24),
               Text(
                 _isConfirming ? 'Konfirmasi PIN' : 'Buat PIN 6-Digit',
-                style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.textPrimary,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
@@ -108,7 +122,10 @@ class _SetupPinScreenState extends ConsumerState<SetupPinScreen> {
                     ? 'Masukkan kembali PIN yang sama'
                     : 'PIN ini melindungi seluruh data keuangan & dokumen di perangkat',
                 textAlign: TextAlign.center,
-                style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.outline),
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: AppTheme.textSecondary,
+                ),
               ),
               const SizedBox(height: 32),
 
@@ -119,13 +136,13 @@ class _SetupPinScreenState extends ConsumerState<SetupPinScreen> {
                   final isFilled = index < currentPin.length;
                   return Container(
                     margin: const EdgeInsets.symmetric(horizontal: 8),
-                    width: 16,
-                    height: 16,
+                    width: 14,
+                    height: 14,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: isFilled ? theme.colorScheme.primary : Colors.transparent,
+                      color: isFilled ? AppTheme.primaryTeal : Colors.transparent,
                       border: Border.all(
-                        color: theme.colorScheme.primary,
+                        color: isFilled ? AppTheme.primaryTeal : AppTheme.borderColor,
                         width: 2,
                       ),
                     ),
@@ -138,7 +155,11 @@ class _SetupPinScreenState extends ConsumerState<SetupPinScreen> {
                 Text(
                   _errorMessage!,
                   textAlign: TextAlign.center,
-                  style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.error),
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: AppTheme.error,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
 
               const Spacer(),
@@ -149,19 +170,19 @@ class _SetupPinScreenState extends ConsumerState<SetupPinScreen> {
                 child: Column(
                   children: [
                     _buildRow(['1', '2', '3']),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 14),
                     _buildRow(['4', '5', '6']),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 14),
                     _buildRow(['7', '8', '9']),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 14),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         const SizedBox(width: 68, height: 68),
                         _buildButton('0'),
                         IconButton(
-                          iconSize: 28,
-                          icon: const Icon(Icons.backspace_outlined),
+                          iconSize: 26,
+                          icon: const Icon(Icons.backspace_outlined, color: AppTheme.textSecondary),
                           onPressed: _onBackspacePressed,
                         ),
                       ],
@@ -185,20 +206,29 @@ class _SetupPinScreenState extends ConsumerState<SetupPinScreen> {
   }
 
   Widget _buildButton(String digit) {
-    final theme = Theme.of(context);
-    return SizedBox(
+    return Container(
       width: 68,
       height: 68,
-      child: OutlinedButton(
-        style: OutlinedButton.styleFrom(
-          shape: const CircleBorder(),
-          padding: EdgeInsets.zero,
-          side: BorderSide(color: theme.colorScheme.outlineVariant),
-        ),
-        onPressed: () => _onDigitPressed(digit),
-        child: Text(
-          digit,
-          style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w600),
+      decoration: BoxDecoration(
+        color: AppTheme.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppTheme.borderColor),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: () => _onDigitPressed(digit),
+          child: Center(
+            child: Text(
+              digit,
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.w700,
+                color: AppTheme.textPrimary,
+              ),
+            ),
+          ),
         ),
       ),
     );

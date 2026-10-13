@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../app/theme.dart';
 import '../../../../core/constants/money.dart';
 import '../providers/finance_providers.dart';
 
@@ -14,23 +15,20 @@ class BalanceCard extends ConsumerWidget {
     final isVisible = ref.watch(balanceVisibilityProvider);
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(20),
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Theme.of(context).colorScheme.primary,
-            Theme.of(context).colorScheme.primary.withAlpha(210),
-          ],
+        color: AppTheme.primaryTeal,
+        borderRadius: BorderRadius.circular(AppTheme.radiusCard),
+        border: Border.all(
+          color: const Color(0xFF134553),
+          width: 1,
         ),
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
-            color: Theme.of(context).colorScheme.primary.withAlpha(60),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
+            color: Color(0x28062F3B),
+            blurRadius: 18,
+            offset: Offset(0, 8),
           ),
         ],
       ),
@@ -40,13 +38,27 @@ class BalanceCard extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Total Saldo Aktif',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.white.withAlpha(220),
-                ),
+              Row(
+                children: [
+                  Container(
+                    width: 7,
+                    height: 7,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF6ED1B8),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Total Saldo Aktif',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white.withAlpha(210),
+                      letterSpacing: 0.1,
+                    ),
+                  ),
+                ],
               ),
               IconButton(
                 visualDensity: VisualDensity.compact,
@@ -61,15 +73,15 @@ class BalanceCard extends ConsumerWidget {
               ),
             ],
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 6),
           totalBalanceAsync.when(
             data: (balance) => Text(
               isVisible ? Money.format(balance) : '••••••••',
               style: const TextStyle(
-                fontSize: 28,
+                fontSize: 30,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
-                letterSpacing: 0.5,
+                letterSpacing: -0.5,
               ),
             ),
             loading: () => const Text(
@@ -78,38 +90,45 @@ class BalanceCard extends ConsumerWidget {
             ),
             error: (err, stack) => const Text(
               'Rp0',
-              style: TextStyle(fontSize: 28, color: Colors.white),
+              style: TextStyle(fontSize: 30, color: Colors.white, fontWeight: FontWeight.bold),
             ),
           ),
-          const SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _ActionButton(
-                label: 'Keluar',
-                icon: Icons.arrow_upward_rounded,
-                color: Colors.redAccent.shade100,
-                onTap: () => context.push('/finance/add?kind=expense'),
-              ),
-              _ActionButton(
-                label: 'Masuk',
-                icon: Icons.arrow_downward_rounded,
-                color: Colors.tealAccent.shade400,
-                onTap: () => context.push('/finance/add?kind=income'),
-              ),
-              _ActionButton(
-                label: 'Transfer',
-                icon: Icons.swap_horiz_rounded,
-                color: Colors.lightBlueAccent.shade200,
-                onTap: () => context.push('/finance/transfer'),
-              ),
-              _ActionButton(
-                label: 'Tabungan',
-                icon: Icons.savings_outlined,
-                color: Colors.amberAccent.shade200,
-                onTap: () => context.push('/finance/savings'),
-              ),
-            ],
+          const SizedBox(height: 22),
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+            decoration: BoxDecoration(
+              color: Colors.white.withAlpha(20),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _ActionButton(
+                  label: 'Keluar',
+                  icon: Icons.arrow_outward_rounded,
+                  color: const Color(0xFFFF8A80),
+                  onTap: () => context.push('/finance/add?kind=expense'),
+                ),
+                _ActionButton(
+                  label: 'Masuk',
+                  icon: Icons.south_west_rounded,
+                  color: const Color(0xFF6ED1B8),
+                  onTap: () => context.push('/finance/add?kind=income'),
+                ),
+                _ActionButton(
+                  label: 'Transfer',
+                  icon: Icons.swap_horiz_rounded,
+                  color: const Color(0xFF90CAF9),
+                  onTap: () => context.push('/finance/transfer'),
+                ),
+                _ActionButton(
+                  label: 'Tabungan',
+                  icon: Icons.savings_outlined,
+                  color: const Color(0xFFFFE082),
+                  onTap: () => context.push('/finance/savings'),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -134,27 +153,33 @@ class _ActionButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white.withAlpha(40),
-              shape: BoxShape.circle,
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: Colors.white.withAlpha(28),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 20),
             ),
-            child: Icon(icon, color: color, size: 22),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
+            const SizedBox(height: 6),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 11.5,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+                letterSpacing: 0.1,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

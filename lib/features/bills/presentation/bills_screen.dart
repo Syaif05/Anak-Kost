@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../app/theme.dart';
+import '../../../app/widgets/app_ui_components.dart';
 import '../../../core/constants/money.dart';
 import '../domain/models/bill_models.dart';
 import 'providers/bills_providers.dart';
@@ -57,53 +59,77 @@ class _BillsScreenState extends ConsumerState<BillsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final occurrencesAsync = ref.watch(billOccurrencesForPeriodProvider(_periodKey));
 
     return Scaffold(
+      backgroundColor: AppTheme.background,
       appBar: AppBar(
+        backgroundColor: AppTheme.background,
+        elevation: 0,
         title: const Text(
           'Tagihan Kost',
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontWeight: FontWeight.w700,
+            fontSize: 20,
+            color: AppTheme.textPrimary,
+          ),
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.sync),
-            tooltip: 'Sinkronkan Tagihan Bulan Ini',
-            onPressed: _generateCurrentMonthOccurrences,
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: AppSquareIconButton(
+              icon: Icons.sync_rounded,
+              tooltip: 'Sinkronkan Tagihan Bulan Ini',
+              onPressed: _generateCurrentMonthOccurrences,
+            ),
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _openAddTemplateSheet,
-        icon: const Icon(Icons.add),
-        label: const Text('Tambah Tagihan'),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 80),
+        child: FloatingActionButton.extended(
+          onPressed: _openAddTemplateSheet,
+          backgroundColor: AppTheme.primaryTeal,
+          foregroundColor: Colors.white,
+          elevation: 2,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          icon: const Icon(Icons.add_rounded, size: 20),
+          label: const Text('Tambah Tagihan', style: TextStyle(fontWeight: FontWeight.w600)),
+        ),
       ),
       body: Column(
         children: [
           // Month Selector Header
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            color: theme.colorScheme.surface,
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            decoration: const BoxDecoration(
+              color: AppTheme.surface,
+              border: Border(bottom: BorderSide(color: AppTheme.borderColor)),
+            ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                IconButton(
-                  icon: const Icon(Icons.chevron_left),
+                AppSquareIconButton(
+                  icon: Icons.chevron_left_rounded,
+                  size: 38,
                   onPressed: () => _changeMonth(-1),
                 ),
                 Text(
                   DateFormat('MMMM yyyy', 'id_ID').format(_selectedMonth),
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 16,
+                    color: AppTheme.textPrimary,
+                  ),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.chevron_right),
+                AppSquareIconButton(
+                  icon: Icons.chevron_right_rounded,
+                  size: 38,
                   onPressed: () => _changeMonth(1),
                 ),
               ],
             ),
           ),
-          const Divider(height: 1),
 
           // Content Area
           Expanded(
@@ -115,19 +141,15 @@ class _BillsScreenState extends ConsumerState<BillsScreen> {
                 final totalRemaining = occurrences.fold(0, (sum, o) => sum + o.remainingRp);
 
                 return ListView(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 80),
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 120),
                   children: [
-                    // Summary Banner Card
+                    // Summary Card
                     Container(
-                      padding: const EdgeInsets.all(18),
+                      padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            theme.colorScheme.primaryContainer,
-                            theme.colorScheme.primaryContainer.withAlpha(180),
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(20),
+                        color: AppTheme.surface,
+                        borderRadius: BorderRadius.circular(22),
+                        border: Border.all(color: AppTheme.borderColor),
                       ),
                       child: Column(
                         children: [
@@ -137,20 +159,20 @@ class _BillsScreenState extends ConsumerState<BillsScreen> {
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
+                                  const Text(
                                     'Total Tagihan',
                                     style: TextStyle(
                                       fontSize: 12,
-                                      color: theme.colorScheme.onPrimaryContainer.withAlpha(200),
+                                      color: AppTheme.textSecondary,
                                     ),
                                   ),
-                                  const SizedBox(height: 2),
+                                  const SizedBox(height: 4),
                                   Text(
                                     Money.format(totalDue),
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: theme.colorScheme.onPrimaryContainer,
+                                      fontWeight: FontWeight.w800,
+                                      color: AppTheme.textPrimary,
                                     ),
                                   ),
                                 ],
@@ -158,54 +180,56 @@ class _BillsScreenState extends ConsumerState<BillsScreen> {
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
-                                  Text(
+                                  const Text(
                                     'Sisa Belum Bayar',
                                     style: TextStyle(
                                       fontSize: 12,
-                                      color: theme.colorScheme.onPrimaryContainer.withAlpha(200),
+                                      color: AppTheme.textSecondary,
                                     ),
                                   ),
-                                  const SizedBox(height: 2),
+                                  const SizedBox(height: 4),
                                   Text(
                                     Money.format(totalRemaining),
                                     style: TextStyle(
                                       fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: totalRemaining > 0 ? Colors.red.shade700 : Colors.green.shade700,
+                                      fontWeight: FontWeight.w800,
+                                      color: totalRemaining > 0 ? AppTheme.error : AppTheme.success,
                                     ),
                                   ),
                                 ],
                               ),
                             ],
                           ),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 14),
                           ClipRRect(
-                            borderRadius: BorderRadius.circular(4),
+                            borderRadius: BorderRadius.circular(6),
                             child: LinearProgressIndicator(
                               value: totalDue > 0 ? (totalPaid / totalDue) : 1.0,
                               minHeight: 8,
-                              backgroundColor: Colors.white38,
-                              color: Colors.green,
+                              backgroundColor: AppTheme.surfaceSecondary,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                totalRemaining == 0 ? AppTheme.success : AppTheme.primaryTeal,
+                              ),
                             ),
                           ),
-                          const SizedBox(height: 6),
+                          const SizedBox(height: 8),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
                                 'Terbayar: ${Money.format(totalPaid)}',
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
-                                  color: theme.colorScheme.onPrimaryContainer,
+                                  color: AppTheme.textSecondary,
                                 ),
                               ),
                               Text(
                                 totalDue > 0 ? '${((totalPaid / totalDue) * 100).toInt()}%' : '100%',
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: theme.colorScheme.onPrimaryContainer,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppTheme.primaryTeal,
                                 ),
                               ),
                             ],
@@ -220,16 +244,33 @@ class _BillsScreenState extends ConsumerState<BillsScreen> {
                       Center(
                         child: Column(
                           children: [
-                            Icon(Icons.receipt_long_outlined, size: 64, color: theme.colorScheme.outlineVariant),
+                            Container(
+                              width: 56,
+                              height: 56,
+                              decoration: BoxDecoration(
+                                color: AppTheme.surfaceSecondary,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: AppTheme.borderColor),
+                              ),
+                              child: const Icon(
+                                Icons.receipt_long_outlined,
+                                size: 28,
+                                color: AppTheme.textSecondary,
+                              ),
+                            ),
                             const SizedBox(height: 16),
-                            Text(
+                            const Text(
                               'Belum Ada Tagihan di Bulan Ini',
-                              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: AppTheme.textPrimary,
+                              ),
                             ),
                             const SizedBox(height: 6),
-                            Text(
+                            const Text(
                               'Buat template tagihan baru dengan tombol di bawah',
-                              style: TextStyle(color: theme.colorScheme.outline),
+                              style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
                             ),
                           ],
                         ),
@@ -255,111 +296,74 @@ class _BillOccurrenceCard extends ConsumerWidget {
 
   const _BillOccurrenceCard({required this.occurrence});
 
-  Color _statusColor(BillStatus status) {
+  Widget _buildStatusBadge(BillStatus status) {
     switch (status) {
       case BillStatus.paid:
-        return Colors.green;
+        return AppStatusBadge.success('Lunas Penuh', icon: Icons.check_circle_rounded);
       case BillStatus.partial:
-        return Colors.orange;
+        return AppStatusBadge.warning('Sebagian (${Money.format(occurrence.remainingRp)})', icon: Icons.timelapse_rounded);
       case BillStatus.overdue:
-        return Colors.red;
+        return AppStatusBadge.error('Terlambat', icon: Icons.warning_amber_rounded);
       case BillStatus.unpaid:
-        return Colors.blueGrey;
-    }
-  }
-
-  IconData _statusIcon(BillStatus status) {
-    switch (status) {
-      case BillStatus.paid:
-        return Icons.check_circle;
-      case BillStatus.partial:
-        return Icons.timelapse;
-      case BillStatus.overdue:
-        return Icons.warning_rounded;
-      case BillStatus.unpaid:
-        return Icons.radio_button_unchecked;
+        return AppStatusBadge.neutral('Belum Dibayar', icon: Icons.radio_button_unchecked);
     }
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
     final status = occurrence.status;
-    final statusColor = _statusColor(status);
     final isPaid = occurrence.isPaid;
 
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: 14),
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(18),
-        side: BorderSide(
-          color: status == BillStatus.overdue
-              ? Colors.red.shade300
-              : theme.colorScheme.outlineVariant.withAlpha(100),
+      decoration: BoxDecoration(
+        color: AppTheme.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: status == BillStatus.overdue ? AppTheme.error.withAlpha(120) : AppTheme.borderColor,
           width: status == BillStatus.overdue ? 1.5 : 1.0,
         ),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(18),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header: Name & Status Chip
+            // Header: Name & Status Badge
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
                   child: Text(
                     occurrence.template.name,
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.textPrimary,
+                    ),
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: statusColor.withAlpha(25),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: statusColor.withAlpha(80)),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(_statusIcon(status), size: 14, color: statusColor),
-                      const SizedBox(width: 4),
-                      Text(
-                        status == BillStatus.partial
-                            ? 'Sebagian (${Money.format(occurrence.remainingRp)})'
-                            : status.label,
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: statusColor,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                _buildStatusBadge(status),
               ],
             ),
             const SizedBox(height: 8),
 
-            // Due Date & Effective Amount
+            // Due Date
             Row(
               children: [
-                Icon(Icons.calendar_month, size: 15, color: theme.colorScheme.outline),
+                const Icon(Icons.calendar_today_outlined, size: 14, color: AppTheme.textSecondary),
                 const SizedBox(width: 4),
                 Text(
                   'Jatuh Tempo: ${occurrence.occurrence.dueDate}',
                   style: TextStyle(
                     fontSize: 13,
-                    color: status == BillStatus.overdue ? Colors.red : theme.colorScheme.outline,
-                    fontWeight: status == BillStatus.overdue ? FontWeight.bold : FontWeight.normal,
+                    color: status == BillStatus.overdue ? AppTheme.error : AppTheme.textSecondary,
+                    fontWeight: status == BillStatus.overdue ? FontWeight.w700 : FontWeight.w500,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 14),
 
             // Financial Progress
             Row(
@@ -367,14 +371,14 @@ class _BillOccurrenceCard extends ConsumerWidget {
               children: [
                 Text(
                   'Total: ${Money.format(occurrence.effectiveAmountDueRp)}',
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppTheme.textPrimary),
                 ),
                 Text(
                   'Terbayar: ${Money.format(occurrence.totalPaidRp)}',
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: isPaid ? Colors.green : theme.colorScheme.onSurfaceVariant,
+                    color: isPaid ? AppTheme.success : AppTheme.textSecondary,
                   ),
                 ),
               ],
@@ -388,8 +392,8 @@ class _BillOccurrenceCard extends ConsumerWidget {
                       ? (occurrence.totalPaidRp / occurrence.effectiveAmountDueRp)
                       : 0.0,
                   minHeight: 6,
-                  backgroundColor: theme.colorScheme.surfaceContainerHighest,
-                  color: Colors.orange,
+                  backgroundColor: AppTheme.surfaceSecondary,
+                  valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.warning),
                 ),
               ),
             ],
@@ -400,12 +404,13 @@ class _BillOccurrenceCard extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 if (!isPaid) ...[
-                  ElevatedButton.icon(
-                    icon: const Icon(Icons.payment, size: 16),
+                  FilledButton.icon(
+                    icon: const Icon(Icons.payment_rounded, size: 16),
                     label: const Text('Bayar Tagihan'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: theme.colorScheme.primary,
-                      foregroundColor: theme.colorScheme.onPrimary,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppTheme.primaryTeal,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                     onPressed: () {
@@ -419,17 +424,17 @@ class _BillOccurrenceCard extends ConsumerWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: Colors.green.withAlpha(20),
-                      borderRadius: BorderRadius.circular(8),
+                      color: AppTheme.successContainer,
+                      borderRadius: BorderRadius.circular(10),
                     ),
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.verified, size: 16, color: Colors.green),
+                        Icon(Icons.verified_rounded, size: 16, color: AppTheme.success),
                         SizedBox(width: 6),
                         Text(
                           'Lunas Penuh',
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.green),
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppTheme.success),
                         ),
                       ],
                     ),

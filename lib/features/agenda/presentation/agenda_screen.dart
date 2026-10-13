@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../app/theme.dart';
 import 'providers/agenda_providers.dart';
 import 'widgets/add_event_sheet.dart';
 import 'widgets/add_task_sheet.dart';
@@ -62,23 +63,63 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> with SingleTickerPr
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.background,
       appBar: AppBar(
+        backgroundColor: AppTheme.background,
+        elevation: 0,
         title: const Text(
           'Agenda & Tugas',
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontWeight: FontWeight.w700,
+            fontSize: 20,
+            color: AppTheme.textPrimary,
+          ),
         ),
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(icon: Icon(Icons.calendar_month), text: 'Agenda Kalender'),
-            Tab(icon: Icon(Icons.check_circle_outline), text: 'Daftar Tugas'),
-          ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(48),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+            child: Container(
+              height: 40,
+              decoration: BoxDecoration(
+                color: AppTheme.surfaceSecondary,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: TabBar(
+                controller: _tabController,
+                indicator: BoxDecoration(
+                  color: AppTheme.primaryTeal,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                indicatorSize: TabBarIndicatorSize.tab,
+                labelColor: Colors.white,
+                unselectedLabelColor: AppTheme.textSecondary,
+                labelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13),
+                dividerColor: Colors.transparent,
+                tabs: const [
+                  Tab(text: 'Agenda Kalender'),
+                  Tab(text: 'Daftar Tugas'),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _openAddModal,
-        icon: const Icon(Icons.add),
-        label: Text(_tabController.index == 0 ? 'Tambah Agenda' : 'Tambah Tugas'),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 80),
+        child: FloatingActionButton.extended(
+          onPressed: _openAddModal,
+          backgroundColor: AppTheme.primaryTeal,
+          foregroundColor: Colors.white,
+          elevation: 2,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          icon: const Icon(Icons.add_rounded, size: 20),
+          label: Text(
+            _tabController.index == 0 ? 'Tambah Agenda' : 'Tambah Tugas',
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+        ),
       ),
       body: TabBarView(
         controller: _tabController,

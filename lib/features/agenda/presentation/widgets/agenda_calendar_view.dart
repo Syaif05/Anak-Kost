@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../app/theme.dart';
+import '../../../../app/widgets/app_ui_components.dart';
 import '../providers/agenda_providers.dart';
 import '../../domain/models/agenda_models.dart';
 
@@ -115,7 +117,6 @@ class _AgendaCalendarViewState extends ConsumerState<AgendaCalendarView> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final selected = widget.selectedDate;
 
     // Evaluasi occurrence untuk hari yang dipilih (00:00:00 s/d 23:59:59)
@@ -128,8 +129,11 @@ class _AgendaCalendarViewState extends ConsumerState<AgendaCalendarView> {
       children: [
         // Horizontal Date Selector Strip
         Container(
-          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-          color: theme.colorScheme.surface,
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+          decoration: const BoxDecoration(
+            color: AppTheme.surface,
+            border: Border(bottom: BorderSide(color: AppTheme.borderColor)),
+          ),
           child: Column(
             children: [
               Row(
@@ -137,16 +141,41 @@ class _AgendaCalendarViewState extends ConsumerState<AgendaCalendarView> {
                 children: [
                   Text(
                     DateFormat('MMMM yyyy', 'id_ID').format(selected),
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 16,
+                      color: AppTheme.textPrimary,
+                    ),
                   ),
-                  TextButton.icon(
-                    icon: const Icon(Icons.today, size: 16),
-                    label: const Text('Hari Ini'),
-                    onPressed: () => widget.onDateSelected(DateTime.now()),
+                  GestureDetector(
+                    onTap: () => widget.onDateSelected(DateTime.now()),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppTheme.surfaceSecondary,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: AppTheme.borderColor),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.today_rounded, size: 14, color: AppTheme.primaryTeal),
+                          SizedBox(width: 4),
+                          Text(
+                            'Hari Ini',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.primaryTeal,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ],
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 10),
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
@@ -163,16 +192,16 @@ class _AgendaCalendarViewState extends ConsumerState<AgendaCalendarView> {
                       onTap: () => widget.onDateSelected(day),
                       child: Container(
                         margin: const EdgeInsets.symmetric(horizontal: 4),
-                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? theme.colorScheme.primary
-                              : (isToday ? theme.colorScheme.primaryContainer.withAlpha(80) : Colors.transparent),
-                          borderRadius: BorderRadius.circular(14),
+                              ? AppTheme.primaryTeal
+                              : (isToday ? AppTheme.primaryTealContainer : Colors.transparent),
+                          borderRadius: BorderRadius.circular(16),
                           border: Border.all(
                             color: isSelected
-                                ? theme.colorScheme.primary
-                                : (isToday ? theme.colorScheme.primary.withAlpha(120) : Colors.transparent),
+                                ? AppTheme.primaryTeal
+                                : (isToday ? AppTheme.primaryTeal : AppTheme.borderColor),
                           ),
                         ),
                         child: Column(
@@ -180,10 +209,11 @@ class _AgendaCalendarViewState extends ConsumerState<AgendaCalendarView> {
                             Text(
                               DateFormat('E', 'id_ID').format(day),
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
                                 color: isSelected
-                                    ? theme.colorScheme.onPrimary
-                                    : theme.colorScheme.onSurfaceVariant,
+                                    ? Colors.white70
+                                    : (isToday ? AppTheme.primaryTeal : AppTheme.textSecondary),
                               ),
                             ),
                             const SizedBox(height: 4),
@@ -191,10 +221,10 @@ class _AgendaCalendarViewState extends ConsumerState<AgendaCalendarView> {
                               '${day.day}',
                               style: TextStyle(
                                 fontSize: 16,
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w700,
                                 color: isSelected
-                                    ? theme.colorScheme.onPrimary
-                                    : theme.colorScheme.onSurface,
+                                    ? Colors.white
+                                    : (isToday ? AppTheme.primaryTeal : AppTheme.textPrimary),
                               ),
                             ),
                           ],
@@ -207,7 +237,6 @@ class _AgendaCalendarViewState extends ConsumerState<AgendaCalendarView> {
             ],
           ),
         ),
-        const Divider(height: 1),
 
         // List of Occurrences
         Expanded(
@@ -215,45 +244,61 @@ class _AgendaCalendarViewState extends ConsumerState<AgendaCalendarView> {
             data: (occurrences) {
               if (occurrences.isEmpty) {
                 return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.coffee_outlined, size: 64, color: theme.colorScheme.outlineVariant),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Tidak Ada Agenda Hari Ini',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: theme.colorScheme.onSurfaceVariant,
+                  child: Padding(
+                    padding: const EdgeInsets.all(32),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 56,
+                          height: 56,
+                          decoration: BoxDecoration(
+                            color: AppTheme.surfaceSecondary,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: AppTheme.borderColor),
+                          ),
+                          child: const Icon(
+                            Icons.coffee_outlined,
+                            size: 28,
+                            color: AppTheme.textSecondary,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'Waktunya bersantai, istirahat, atau fokus belajar! ☕',
-                        style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.outline),
-                      ),
-                    ],
+                        const SizedBox(height: 16),
+                        const Text(
+                          'Tidak Ada Agenda Hari Ini',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        const Text(
+                          'Waktunya bersantai, istirahat, atau fokus belajar! ☕',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+                        ),
+                      ],
+                    ),
                   ),
                 );
               }
 
               return ListView.builder(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 120),
                 itemCount: occurrences.length,
                 itemBuilder: (context, index) {
                   final occ = occurrences[index];
                   final timeRange =
                       '${DateFormat('HH:mm').format(occ.start)} - ${DateFormat('HH:mm').format(occ.end)}';
 
-                  return Card(
+                  return Container(
                     margin: const EdgeInsets.only(bottom: 12),
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      side: BorderSide(
-                        color: occ.isOverridden
-                            ? Colors.amber.shade400
-                            : theme.colorScheme.outlineVariant.withAlpha(100),
+                    decoration: BoxDecoration(
+                      color: AppTheme.surface,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: occ.isOverridden ? AppTheme.warning.withAlpha(120) : AppTheme.borderColor,
                       ),
                     ),
                     child: Padding(
@@ -263,63 +308,27 @@ class _AgendaCalendarViewState extends ConsumerState<AgendaCalendarView> {
                         children: [
                           Row(
                             children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: theme.colorScheme.primaryContainer,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(Icons.access_time, size: 14, color: theme.colorScheme.onPrimaryContainer),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      timeRange,
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                        color: theme.colorScheme.onPrimaryContainer,
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                              AppStatusBadge.neutral(
+                                timeRange,
+                                icon: Icons.access_time_rounded,
                               ),
                               if (occ.isRecurring) ...[
                                 const SizedBox(width: 6),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: Colors.blue.withAlpha(30),
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: const Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(Icons.repeat, size: 12, color: Colors.blue),
-                                      SizedBox(width: 2),
-                                      Text('Mingguan', style: TextStyle(fontSize: 11, color: Colors.blue)),
-                                    ],
-                                  ),
+                                AppStatusBadge(
+                                  label: 'Mingguan',
+                                  backgroundColor: AppTheme.primaryTealContainer,
+                                  textColor: AppTheme.primaryTeal,
+                                  icon: Icons.repeat_rounded,
                                 ),
                               ],
                               if (occ.isOverridden) ...[
                                 const SizedBox(width: 6),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: Colors.amber.withAlpha(30),
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: const Text(
-                                    'Diubah',
-                                    style: TextStyle(fontSize: 11, color: Colors.amber, fontWeight: FontWeight.bold),
-                                  ),
-                                ),
+                                AppStatusBadge.warning('Diubah'),
                               ],
                               const Spacer(),
                               PopupMenuButton<String>(
-                                icon: const Icon(Icons.more_vert, size: 20),
+                                icon: const Icon(Icons.more_vert, size: 20, color: AppTheme.textSecondary),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                 onSelected: (action) {
                                   if (action == 'cancel') {
                                     _cancelOccurrence(occ);
@@ -332,19 +341,19 @@ class _AgendaCalendarViewState extends ConsumerState<AgendaCalendarView> {
                                     value: 'override',
                                     child: Row(
                                       children: [
-                                        Icon(Icons.edit_calendar, size: 18),
+                                        Icon(Icons.edit_calendar_outlined, size: 18),
                                         SizedBox(width: 8),
                                         Text('Ubah Hari Ini (WFH/dll)'),
                                       ],
                                     ),
                                   ),
-                                  const PopupMenuItem(
+                                  PopupMenuItem(
                                     value: 'cancel',
                                     child: Row(
                                       children: [
-                                        Icon(Icons.event_busy, size: 18, color: Colors.red),
-                                        SizedBox(width: 8),
-                                        Text('Batalkan Hari Ini (Libur)', style: TextStyle(color: Colors.red)),
+                                        Icon(Icons.event_busy_outlined, size: 18, color: AppTheme.danger),
+                                        const SizedBox(width: 8),
+                                        Text('Batalkan Hari Ini (Libur)', style: TextStyle(color: AppTheme.danger)),
                                       ],
                                     ),
                                   ),
@@ -355,18 +364,22 @@ class _AgendaCalendarViewState extends ConsumerState<AgendaCalendarView> {
                           const SizedBox(height: 10),
                           Text(
                             occ.title,
-                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.textPrimary,
+                            ),
                           ),
                           if (occ.locationText != null && occ.locationText!.isNotEmpty) ...[
                             const SizedBox(height: 6),
                             Row(
                               children: [
-                                Icon(Icons.location_on_outlined, size: 16, color: theme.colorScheme.outline),
+                                const Icon(Icons.location_on_outlined, size: 16, color: AppTheme.textSecondary),
                                 const SizedBox(width: 4),
                                 Expanded(
                                   child: Text(
                                     occ.locationText!,
-                                    style: TextStyle(fontSize: 13, color: theme.colorScheme.outline),
+                                    style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary),
                                   ),
                                 ),
                               ],
@@ -376,7 +389,7 @@ class _AgendaCalendarViewState extends ConsumerState<AgendaCalendarView> {
                             const SizedBox(height: 4),
                             Text(
                               occ.notes!,
-                              style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurfaceVariant),
+                              style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
                             ),
                           ],
                         ],

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../app/theme.dart';
 import '../../../../core/constants/money.dart';
 import '../../domain/models/finance_models.dart';
 import '../providers/finance_providers.dart';
@@ -19,71 +20,108 @@ class BudgetCardWidget extends ConsumerWidget {
     final budgetListAsync = ref.watch(budgetProgressStreamProvider(currentMonthStart));
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Card(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        elevation: 0,
-        color: Theme.of(context).colorScheme.surfaceContainerHighest.withAlpha(80),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      const Icon(Icons.pie_chart_outline, size: 20),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Budget $monthName',
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppTheme.surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: AppTheme.borderColor),
+        ),
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: AppTheme.surfaceSecondary,
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                    ],
-                  ),
-                  TextButton.icon(
-                    style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
-                    icon: const Icon(Icons.add, size: 16),
-                    label: const Text('Atur'),
-                    onPressed: () {
-                      showModalBottomSheet(
-                        context: context,
-                        isScrollControlled: true,
-                        shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-                        ),
-                        builder: (ctx) => const AddBudgetSheet(),
-                      );
-                    },
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              budgetListAsync.when(
-                data: (budgets) {
-                  if (budgets.isEmpty) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      child: Center(
-                        child: Text(
-                          'Belum ada limit budget bulan ini.\nTekan "Atur" untuk membatasi pengeluaran kategori.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
-                        ),
+                      child: const Icon(Icons.pie_chart_outline, size: 18, color: AppTheme.primaryTeal),
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      'Budget $monthName',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 15,
+                        color: AppTheme.textPrimary,
                       ),
+                    ),
+                  ],
+                ),
+                GestureDetector(
+                  onTap: () {
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                      ),
+                      builder: (ctx) => const AddBudgetSheet(),
                     );
-                  }
-
-                  return Column(
-                    children: budgets.map((b) => _BudgetItemRow(progress: b)).toList(),
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: AppTheme.surfaceSecondary,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: AppTheme.borderColor),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.add, size: 14, color: AppTheme.primaryTeal),
+                        SizedBox(width: 4),
+                        Text(
+                          'Atur',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.primaryTeal,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            budgetListAsync.when(
+              data: (budgets) {
+                if (budgets.isEmpty) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    child: Center(
+                      child: Text(
+                        'Belum ada limit budget bulan ini.\nTekan "Atur" untuk membatasi pengeluaran kategori.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: AppTheme.textSecondary, fontSize: 13, height: 1.4),
+                      ),
+                    ),
                   );
-                },
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (err, _) => Text('Error: $err'),
+                }
+
+                return Column(
+                  children: budgets.map((b) => _BudgetItemRow(progress: b)).toList(),
+                );
+              },
+              loading: () => const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(16),
+                  child: CircularProgressIndicator(),
+                ),
               ),
-            ],
-          ),
+              error: (err, _) => Text('Error: $err'),
+            ),
+          ],
         ),
       ),
     );
@@ -96,9 +134,9 @@ class _BudgetItemRow extends StatelessWidget {
   const _BudgetItemRow({required this.progress});
 
   Color _getStatusColor() {
-    if (progress.isOverBudget) return Colors.red;
-    if (progress.isWarning80) return Colors.orange;
-    return Colors.teal;
+    if (progress.isOverBudget) return AppTheme.danger;
+    if (progress.isWarning80) return AppTheme.warning;
+    return AppTheme.primaryTeal;
   }
 
   @override
@@ -107,7 +145,7 @@ class _BudgetItemRow extends StatelessWidget {
     final clampedRatio = progress.percentage > 1.0 ? 1.0 : progress.percentage;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -116,7 +154,11 @@ class _BudgetItemRow extends StatelessWidget {
             children: [
               Text(
                 progress.category.name,
-                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                  color: AppTheme.textPrimary,
+                ),
               ),
               Text(
                 '${(progress.percentage * 100).toStringAsFixed(0)}%',
@@ -128,23 +170,23 @@ class _BudgetItemRow extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           ClipRRect(
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(6),
             child: LinearProgressIndicator(
               value: clampedRatio,
               minHeight: 7,
-              backgroundColor: Colors.grey.withAlpha(40),
+              backgroundColor: AppTheme.surfaceSecondary,
               valueColor: AlwaysStoppedAnimation<Color>(statusColor),
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 6),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 'Terpakai: ${Money.format(progress.spentRp)}',
-                style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary),
               ),
               Text(
                 progress.isOverBudget
@@ -152,8 +194,8 @@ class _BudgetItemRow extends StatelessWidget {
                     : 'Sisa ${Money.format(progress.remainingRp)}',
                 style: TextStyle(
                   fontSize: 11,
-                  fontWeight: FontWeight.w500,
-                  color: progress.isOverBudget ? Colors.red : Colors.grey.shade700,
+                  fontWeight: FontWeight.w600,
+                  color: progress.isOverBudget ? AppTheme.danger : AppTheme.textSecondary,
                 ),
               ),
             ],

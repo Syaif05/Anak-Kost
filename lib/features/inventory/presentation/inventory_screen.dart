@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../app/theme.dart';
+import '../../../app/widgets/app_ui_components.dart';
 import '../../documents/presentation/providers/documents_providers.dart';
 import '../../documents/presentation/widgets/add_document_dialog.dart';
 import '../../documents/presentation/widgets/vault_view.dart';
@@ -92,34 +94,75 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.background,
       appBar: AppBar(
+        backgroundColor: AppTheme.background,
+        elevation: 0,
         title: const Text(
-          'Kebutuhan, Stok & Brankas',
-          style: TextStyle(fontWeight: FontWeight.bold),
+          'Kebutuhan & Stok',
+          style: TextStyle(
+            fontWeight: FontWeight.w700,
+            fontSize: 20,
+            color: AppTheme.textPrimary,
+          ),
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.document_scanner_outlined),
-            tooltip: 'Pindai Struk Belanja (OCR)',
-            onPressed: () => ReceiptScannerSheet.show(context),
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: AppSquareIconButton(
+              icon: Icons.document_scanner_outlined,
+              tooltip: 'Pindai Struk Belanja (OCR)',
+              onTap: () => ReceiptScannerSheet.show(context),
+            ),
           ),
         ],
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(icon: Icon(Icons.inventory_2_outlined), text: 'Stok Barang'),
-            Tab(icon: Icon(Icons.shopping_cart_outlined), text: 'Daftar Belanja'),
-            Tab(icon: Icon(Icons.shield_outlined), text: 'Brankas Dokumen'),
-          ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(48),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+            child: Container(
+              height: 40,
+              decoration: BoxDecoration(
+                color: AppTheme.surfaceSecondary,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: TabBar(
+                controller: _tabController,
+                indicator: BoxDecoration(
+                  color: AppTheme.primaryTeal,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                indicatorSize: TabBarIndicatorSize.tab,
+                labelColor: Colors.white,
+                unselectedLabelColor: AppTheme.textSecondary,
+                labelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13),
+                dividerColor: Colors.transparent,
+                tabs: const [
+                  Tab(text: 'Stok Barang'),
+                  Tab(text: 'Belanjaan'),
+                  Tab(text: 'Brankas'),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _openFabAction,
-        icon: const Icon(Icons.add),
-        label: Text(
-          _tabController.index == 0
-              ? 'Tambah Barang'
-              : (_tabController.index == 1 ? 'Tambah Belanja' : 'Tambah Dokumen'),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 80),
+        child: FloatingActionButton.extended(
+          onPressed: _openFabAction,
+          backgroundColor: AppTheme.primaryTeal,
+          foregroundColor: Colors.white,
+          elevation: 2,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          icon: const Icon(Icons.add_rounded, size: 20),
+          label: Text(
+            _tabController.index == 0
+                ? 'Tambah Barang'
+                : (_tabController.index == 1 ? 'Tambah Belanja' : 'Tambah Dokumen'),
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
         ),
       ),
       body: TabBarView(
@@ -134,7 +177,6 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
   }
 
   Widget _buildStockTab() {
-    final theme = Theme.of(context);
     final itemsAsync = ref.watch(inventoryItemsStreamProvider(_selectedCategory));
 
     final categories = [
@@ -151,18 +193,18 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
         // Category Filter Chips
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           child: Row(
             children: categories.map((cat) {
               final isSelected = (_selectedCategory == null && cat == 'Semua') ||
                   (_selectedCategory == cat);
 
               return Padding(
-                padding: const EdgeInsets.only(right: 6),
-                child: FilterChip(
-                  label: Text(cat),
-                  selected: isSelected,
-                  onSelected: (_) {
+                padding: const EdgeInsets.only(right: 8),
+                child: AppPillFilterChip(
+                  label: cat,
+                  isSelected: isSelected,
+                  onTap: () {
                     setState(() {
                       _selectedCategory = cat == 'Semua' ? null : cat;
                     });
@@ -172,7 +214,6 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
             }).toList(),
           ),
         ),
-        const Divider(height: 1),
 
         // Items List
         Expanded(
@@ -180,41 +221,60 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
             data: (items) {
               if (items.isEmpty) {
                 return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.inventory_2_outlined, size: 64, color: theme.colorScheme.outlineVariant),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Belum Ada Barang Inventaris',
-                        style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'Tambahkan barang kebutuhan kost dengan tombol di bawah',
-                        style: TextStyle(color: theme.colorScheme.outline),
-                      ),
-                    ],
+                  child: Padding(
+                    padding: const EdgeInsets.all(32),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 56,
+                          height: 56,
+                          decoration: BoxDecoration(
+                            color: AppTheme.surfaceSecondary,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: AppTheme.borderColor),
+                          ),
+                          child: const Icon(
+                            Icons.inventory_2_outlined,
+                            size: 28,
+                            color: AppTheme.textSecondary,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'Belum Ada Barang Inventaris',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        const Text(
+                          'Tambahkan barang kebutuhan kost dengan tombol di bawah',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+                        ),
+                      ],
+                    ),
                   ),
                 );
               }
 
               return ListView.builder(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 80),
+                padding: const EdgeInsets.fromLTRB(20, 4, 20, 120),
                 itemCount: items.length,
                 itemBuilder: (context, index) {
                   final itemWithStock = items[index];
                   final isLow = itemWithStock.isLowStock;
 
-                  return Card(
+                  return Container(
                     margin: const EdgeInsets.only(bottom: 12),
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      side: BorderSide(
-                        color: isLow
-                            ? Colors.red.shade300
-                            : theme.colorScheme.outlineVariant.withAlpha(100),
+                    decoration: BoxDecoration(
+                      color: AppTheme.surface,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: isLow ? AppTheme.error.withAlpha(120) : AppTheme.borderColor,
                         width: isLow ? 1.5 : 1.0,
                       ),
                     ),
@@ -229,46 +289,35 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
                               Expanded(
                                 child: Text(
                                   itemWithStock.item.name,
-                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 15,
+                                    color: AppTheme.textPrimary,
+                                  ),
                                 ),
                               ),
-                              if (isLow) ...[
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                  decoration: BoxDecoration(
-                                    color: Colors.red.withAlpha(25),
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: const Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(Icons.warning_amber, size: 12, color: Colors.red),
-                                      SizedBox(width: 4),
-                                      Text(
-                                        'Stok Menipis',
-                                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.red),
-                                      ),
-                                    ],
-                                  ),
+                              if (isLow)
+                                AppStatusBadge.error(
+                                  'Stok Menipis',
+                                  icon: Icons.warning_amber_rounded,
                                 ),
-                              ],
                             ],
                           ),
-                          const SizedBox(height: 6),
+                          const SizedBox(height: 8),
                           Row(
                             children: [
                               Text(
                                 'Stok: ${itemWithStock.formattedCurrentStock}',
                                 style: TextStyle(
                                   fontSize: 15,
-                                  fontWeight: FontWeight.bold,
-                                  color: isLow ? Colors.red.shade700 : theme.colorScheme.primary,
+                                  fontWeight: FontWeight.w700,
+                                  color: isLow ? AppTheme.error : AppTheme.primaryTeal,
                                 ),
                               ),
                               const Spacer(),
                               Text(
                                 'Batas Min: ${itemWithStock.formattedMinimumStock}',
-                                style: TextStyle(fontSize: 12, color: theme.colorScheme.outline),
+                                style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
                               ),
                             ],
                           ),
@@ -276,16 +325,16 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
                             const SizedBox(height: 6),
                             Row(
                               children: [
-                                Icon(Icons.place_outlined, size: 14, color: theme.colorScheme.outline),
+                                const Icon(Icons.place_outlined, size: 14, color: AppTheme.textSecondary),
                                 const SizedBox(width: 4),
                                 Text(
                                   itemWithStock.item.locationLabel!,
-                                  style: TextStyle(fontSize: 12, color: theme.colorScheme.outline),
+                                  style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
                                 ),
                               ],
                             ),
                           ],
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 14),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
@@ -293,8 +342,10 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
                                 icon: const Icon(Icons.remove, size: 16),
                                 label: const Text('Pakai'),
                                 style: OutlinedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                  foregroundColor: AppTheme.textPrimary,
+                                  side: const BorderSide(color: AppTheme.borderColor),
+                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                 ),
                                 onPressed: () {
                                   showDialog(
@@ -307,14 +358,14 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
                                 },
                               ),
                               const SizedBox(width: 8),
-                              ElevatedButton.icon(
+                              FilledButton.icon(
                                 icon: const Icon(Icons.add, size: 16),
                                 label: const Text('Tambah'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: theme.colorScheme.primary,
-                                  foregroundColor: theme.colorScheme.onPrimary,
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: AppTheme.primaryTeal,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                 ),
                                 onPressed: () {
                                   showDialog(
@@ -344,45 +395,65 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
   }
 
   Widget _buildShoppingTab() {
-    final theme = Theme.of(context);
     final listsAsync = ref.watch(shoppingListsStreamProvider);
 
     return listsAsync.when(
       data: (lists) {
         if (lists.isEmpty) {
           return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.shopping_cart_outlined, size: 64, color: theme.colorScheme.outlineVariant),
-                const SizedBox(height: 16),
-                Text(
-                  'Belum Ada Daftar Belanja',
-                  style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'Buat daftar belanja mingguan dengan tombol tambah',
-                  style: TextStyle(color: theme.colorScheme.outline),
-                ),
-              ],
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 56,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      color: AppTheme.surfaceSecondary,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: AppTheme.borderColor),
+                    ),
+                    child: const Icon(
+                      Icons.shopping_cart_outlined,
+                      size: 28,
+                      color: AppTheme.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Belum Ada Daftar Belanja',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  const Text(
+                    'Buat daftar belanja mingguan dengan tombol tambah',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+                  ),
+                ],
+              ),
             ),
           );
         }
 
         return ListView.builder(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 80),
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 120),
           itemCount: lists.length,
           itemBuilder: (context, index) {
             final shoppingList = lists[index];
             final isCompleted = shoppingList.list.status == 'completed';
 
-            return Card(
+            return Container(
               margin: const EdgeInsets.only(bottom: 14),
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-                side: BorderSide(color: theme.colorScheme.outlineVariant.withAlpha(100)),
+              decoration: BoxDecoration(
+                color: AppTheme.surface,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: AppTheme.borderColor),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -395,34 +466,26 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
                         Expanded(
                           child: Text(
                             shoppingList.list.name,
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: isCompleted ? Colors.green.withAlpha(25) : Colors.orange.withAlpha(25),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            isCompleted ? 'Selesai Belanja' : 'Belum Selesai',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                              color: isCompleted ? Colors.green : Colors.orange,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 15,
+                              color: AppTheme.textPrimary,
                             ),
                           ),
                         ),
+                        isCompleted
+                            ? AppStatusBadge.success('Selesai Belanja')
+                            : AppStatusBadge.warning('Belum Selesai'),
                       ],
                     ),
                     if (shoppingList.list.storeHint != null) ...[
                       const SizedBox(height: 4),
                       Text(
                         'Rencana Toko: ${shoppingList.list.storeHint}',
-                        style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurfaceVariant),
+                        style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary),
                       ),
                     ],
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 12),
                     Row(
                       children: [
                         Expanded(
@@ -431,15 +494,21 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
                             child: LinearProgressIndicator(
                               value: shoppingList.progress,
                               minHeight: 6,
-                              backgroundColor: theme.colorScheme.surfaceContainerHighest,
-                              color: isCompleted ? Colors.green : theme.colorScheme.primary,
+                              backgroundColor: AppTheme.surfaceSecondary,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                isCompleted ? AppTheme.success : AppTheme.primaryTeal,
+                              ),
                             ),
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 10),
                         Text(
                           '${shoppingList.boughtItems}/${shoppingList.totalItems} item',
-                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: theme.colorScheme.outline),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.textSecondary,
+                          ),
                         ),
                       ],
                     ),
@@ -451,9 +520,9 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
                         child: Row(
                           children: [
                             Icon(
-                              isBought ? Icons.check_circle : Icons.radio_button_unchecked,
+                              isBought ? Icons.check_circle_rounded : Icons.radio_button_unchecked,
                               size: 16,
-                              color: isBought ? Colors.green : theme.colorScheme.outline,
+                              color: isBought ? AppTheme.success : AppTheme.textSecondary,
                             ),
                             const SizedBox(width: 8),
                             Expanded(
@@ -462,7 +531,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
                                 style: TextStyle(
                                   fontSize: 13,
                                   decoration: isBought ? TextDecoration.lineThrough : null,
-                                  color: isBought ? theme.colorScheme.outline : null,
+                                  color: isBought ? AppTheme.textSecondary : AppTheme.textPrimary,
                                 ),
                               ),
                             ),
@@ -474,14 +543,14 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
                       const SizedBox(height: 14),
                       SizedBox(
                         width: double.infinity,
-                        child: ElevatedButton.icon(
-                          icon: const Icon(Icons.shopping_cart_checkout),
+                        child: FilledButton.icon(
+                          icon: const Icon(Icons.shopping_cart_checkout, size: 18),
                           label: const Text('Selesaikan Pembelian (Checkout)'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: theme.colorScheme.primary,
-                            foregroundColor: theme.colorScheme.onPrimary,
+                          style: FilledButton.styleFrom(
+                            backgroundColor: AppTheme.primaryTeal,
+                            foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                           ),
                           onPressed: () {
                             showDialog(
